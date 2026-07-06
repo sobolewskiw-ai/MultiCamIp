@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 protected:
     void resizeEvent(QResizeEvent *event) override;
-
+    bool eventFilter(QObject *obj, QEvent *event) override;
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -34,9 +34,11 @@ private:
     void ukryjPokazPanelSerwer();
     void ukryjPokazPanelPodglad();
     void ukryjPokazPanelNagrania();
+    void tworzeWidgetNagrania(int ileKamer);
     bool statusUkrytySerwer = true;
     bool statusUkrytyPodglad = true;
     bool statusUkrytyNagrania = true;
+    QIcon createGridIcon(int rows, int cols);
     QString stylesheetPushButton;
     QString stylesheetPushButtonRed;
     QString stylesheetLabelSelectedBlue;
@@ -45,10 +47,13 @@ private:
     QWidget *drawerWidgetSerwer;
     QWidget *drawerWidgetPodglad;
     QWidget *drawerWidgetNagrania;
+    QWidget *livePodgladWidget = nullptr;
+    QLabel *powiekszonyLabel = nullptr;  // nullptr = widok siatki, != nullptr = tryb powiększenia
 //    QString appHomePath;
     QListWidget *menuListSerwer;
     QListWidget *menuListPodglad;
     QHBoxLayout *rootLayout;
+    QGridLayout *grid;
     QLabel *centralLabel;
     QToolBar *toolbar;
     // Timery animacji wysuwania paneli - przechowywane jako pola,

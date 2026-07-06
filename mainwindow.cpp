@@ -6,8 +6,11 @@
 #include <QToolButton>
 #include <QTimer>
 #include <QPushButton>
+#include <QGroupBox>
 #include <QDir>
 #include <QMessageBox>
+#include <QPainter>
+#include <QMouseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -93,6 +96,7 @@ void MainWindow::setupUi()
 {
     centralWidget = new QWidget(this);
     rootLayout = new QHBoxLayout(centralWidget);
+    rootLayout->setAlignment(Qt::AlignLeft);
     rootLayout->setContentsMargins(0,0,0,0);
     rootLayout->setSpacing(0);
 
@@ -258,10 +262,55 @@ void MainWindow::setupUi()
     menuListPodglad->setCurrentItem(item1Podglad);
     connect(menuListPodglad, &QListWidget::itemClicked,this, &MainWindow::onMenuItemPodgladClicked);
 
+    QGroupBox *groupBox = new QGroupBox("widok okna liveStream",drawerWidgetPodglad);
+    groupBox->setAlignment(Qt::AlignCenter);
+    //groupBox->setFixedHeight(80);
+    QHBoxLayout *layoutWidokOkien = new QHBoxLayout(groupBox);
+    layoutWidokOkien->setContentsMargins(5,20,5,5);
+    layoutWidokOkien->setSpacing(5);
+    QPushButton *btn4okna = new QPushButton(groupBox);
+    btn4okna->setIcon(createGridIcon(2, 2));   // 4 okna
+    btn4okna->setIconSize(QSize(32, 32));
+    connect(btn4okna, &QPushButton::clicked,this ,[this](){
+        tworzeWidgetNagrania(4);
+    });
+    QPushButton *btn6okna = new QPushButton(groupBox);
+    btn6okna->setIcon(createGridIcon(2, 3));   // 6 okna
+    btn6okna->setIconSize(QSize(32, 32));
+    connect(btn6okna, &QPushButton::clicked,this ,[this](){
+        tworzeWidgetNagrania(6);
+    });
+    QPushButton *btn9okna = new QPushButton(groupBox);
+    btn9okna->setIcon(createGridIcon(3, 3));   // 9 okna
+    btn9okna->setIconSize(QSize(32, 32));
+    connect(btn9okna, &QPushButton::clicked,this ,[this](){
+        tworzeWidgetNagrania(9);
+    });
+    QPushButton *btn12okna = new QPushButton(groupBox);
+    btn12okna->setIcon(createGridIcon(3, 4));   // 12 okna
+    btn12okna->setIconSize(QSize(32, 32));
+    connect(btn12okna, &QPushButton::clicked,this ,[this](){
+        tworzeWidgetNagrania(12);
+    });
+    QPushButton *btn16okna = new QPushButton(groupBox);
+    btn16okna->setIcon(createGridIcon(4, 4));   // 16 okna
+    btn16okna->setIconSize(QSize(32, 32));
+    connect(btn16okna, &QPushButton::clicked,this ,[this](){
+        tworzeWidgetNagrania(16);
+    });
+    layoutWidokOkien->addWidget(btn4okna);
+    layoutWidokOkien->addWidget(btn6okna);
+    layoutWidokOkien->addWidget(btn9okna);
+    layoutWidokOkien->addWidget(btn12okna);
+    layoutWidokOkien->addWidget(btn16okna);
+    layoutWidokOkien->addStretch(1);
+    groupBox->setLayout(layoutWidokOkien);
+
     QPushButton *closeBtnPodglad = new QPushButton("Ukryj", drawerWidgetPodglad);
     closeBtnPodglad->setStyleSheet(stylesheetPushButton);
     connect(closeBtnPodglad, &QPushButton::clicked, this, &MainWindow::ukryjPokazPanelPodglad);
 //    layoutPodglad->addStretch(1);
+    layoutPodglad->addWidget(groupBox);
     layoutPodglad->addWidget(closeBtnPodglad);
 
 //PANEL BOCZNY NAGRANIA
@@ -453,6 +502,71 @@ void MainWindow::ukryjPokazPanelNagrania()
     }
 }
 
+void MainWindow::tworzeWidgetNagrania(int ileKamer)
+{
+    if (livePodgladWidget) {
+        rootLayout->removeWidget(livePodgladWidget);
+        livePodgladWidget->deleteLater();
+        livePodgladWidget = nullptr;
+    }
+    powiekszonyLabel = nullptr; // reset trybu powiększenia przy tworzeniu nowej siatki
+
+    int cols = qMax(1, (int)std::ceil(std::sqrt(ileKamer)));
+    int row = 0;
+    int col = 0;
+    centralLabel->hide();
+    livePodgladWidget = new QWidget(this);
+    grid = new QGridLayout(livePodgladWidget); // pole klasy - dostępne w eventFilter
+    grid->setContentsMargins(2,2,2,2);
+    grid->setSpacing(2);
+
+    for(int x = 0; x < ileKamer; x++){
+        QLabel *labelVideo = new QLabel("KAMERA Nr: "+QString::number(x+1), livePodgladWidget);
+        labelVideo->setAlignment(Qt::AlignCenter);
+        labelVideo->setStyleSheet("background: black;color: white");
+        labelVideo->setProperty("indexKamery", x); // zapamiętujemy indeks do przywracania pozycji w siatce
+        labelVideo->setProperty("rowKamery", row);
+        labelVideo->setProperty("colKamery", col);
+        grid->addWidget(labelVideo, row, col);
+        col++;
+        if (col >= cols) {
+            col = 0; row++;
+        }
+        labelVideo->installEventFilter(this);
+        labelVideo->setProperty("camContainer", QVariant::fromValue((QWidget*)livePodgladWidget));
+        labelVideo->setCursor(Qt::PointingHandCursor);
+    }
+    rootLayout->addWidget(livePodgladWidget);
+}
+
+QIcon MainWindow::createGridIcon(int rows, int cols)
+{
+    const int size = 32;
+
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::NoBrush);
+
+    int margin = 2;
+    int w = (size - 2 * margin - (cols - 1) * 2) / cols;
+    int h = (size - 2 * margin - (rows - 1) * 2) / rows;
+
+    for (int r = 0; r < rows; ++r)
+        for (int c = 0; c < cols; ++c)
+            p.drawRect(
+                margin + c * (w + 2),
+                margin + r * (h + 2),
+                w,
+                h);
+
+    return QIcon(pix);
+}
+
 void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
 {
     QString text = item->text();
@@ -526,3 +640,59 @@ void MainWindow::resizeEvent(QResizeEvent *event)
         emit sygnalResize();
     }
 }
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        QLabel *labelVideo = qobject_cast<QLabel*>(obj);
+        if (labelVideo && labelVideo->property("camContainer").isValid()) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton) {
+
+                if (powiekszonyLabel == nullptr) {
+                    // --- TRYB POWIĘKSZENIA ---
+                    // Liczymy ile wierszy i kolumn ma siatka
+                    int maxRow = 0, maxCol = 0;
+                    for (int i = 0; i < grid->count(); i++) {
+                        int r, c, rs, cs;
+                        grid->getItemPosition(i, &r, &c, &rs, &cs);
+                        maxRow = qMax(maxRow, r + rs);
+                        maxCol = qMax(maxCol, c + cs);
+                    }
+                    // Ukrywamy wszystkie inne labele
+                    for (int i = 0; i < grid->count(); i++) {
+                        QWidget *w = grid->itemAt(i)->widget();
+                        if (w && w != labelVideo)
+                            w->hide();
+                    }
+                    // Wyjmujemy label z jego komórki i wstawiamy
+                    // z powrotem rozciągnięty na całą siatkę (rowSpan x colSpan)
+                    grid->removeWidget(labelVideo);
+                    grid->addWidget(labelVideo, 0, 0, maxRow, maxCol);
+                    powiekszonyLabel = labelVideo;
+                    qDebug() << "Powiększono:" << labelVideo->text();
+
+                } else {
+                    // --- POWRÓT DO SIATKI ---
+                    // Wyjmujemy powiększony label ze spana
+                    grid->removeWidget(powiekszonyLabel);
+                    // Wstawiamy z powrotem na oryginalne miejsce (1x1)
+                    int r = powiekszonyLabel->property("rowKamery").toInt();
+                    int c = powiekszonyLabel->property("colKamery").toInt();
+                    grid->addWidget(powiekszonyLabel, r, c, 1, 1);
+                    // Pokazujemy wszystkie ukryte labele
+                    for (int i = 0; i < grid->count(); i++) {
+                        QWidget *w = grid->itemAt(i)->widget();
+                        if (w) w->show();
+                    }
+                    powiekszonyLabel = nullptr;
+                    qDebug() << "Powrót do siatki";
+                }
+                return true;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
