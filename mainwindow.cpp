@@ -523,7 +523,7 @@ void MainWindow::tworzeWidgetNagrania(int ileKamer)
     for(int x = 0; x < ileKamer; x++){
         QLabel *labelVideo = new QLabel("KAMERA Nr: "+QString::number(x+1), livePodgladWidget);
         labelVideo->setAlignment(Qt::AlignCenter);
-        labelVideo->setStyleSheet("background: black;color: white");
+        labelVideo->setStyleSheet("background: black;color: white;font-size:26px");
         labelVideo->setProperty("indexKamery", x); // zapamiętujemy indeks do przywracania pozycji w siatce
         labelVideo->setProperty("rowKamery", row);
         labelVideo->setProperty("colKamery", col);
