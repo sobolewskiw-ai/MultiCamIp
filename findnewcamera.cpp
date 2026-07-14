@@ -627,8 +627,9 @@ void FindNewCamera::buttonZapisz_cliced()
 
                 if(dialog.exec())
                 {
-                    QString path = dialog.selectedFiles().first();
-                    zapiszDoLineEdit->setText(path+"/Video/");
+                    const QList<QString> selected = dialog.selectedFiles();
+                    if (!selected.isEmpty())
+                        zapiszDoLineEdit->setText(selected.first() + "/Video/");
                 }
             });
 
@@ -777,6 +778,7 @@ void FindNewCamera::zapiszListaKamer()
     if (file.open(QIODevice::WriteOnly))
     {
         QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_6_0);
         qint32 n = ItemModel->rowCount();
         qint32 m = ItemModel->columnCount();
         stream << n << m;
@@ -784,7 +786,14 @@ void FindNewCamera::zapiszListaKamer()
         {
             for (int j=0; j<m; j++)
             {
-                ItemModel->item(i,j)->write(stream);
+                // Zapisujemy tylko tekst jako QString - nie cały QStandardItem
+                // QStandardItem::write() zapisuje też TextAlignmentRole
+                // (QFlags<Qt::AlignmentFlag>) który nie może być bezpiecznie
+                // deserializowany przez QDataStream w innych kontekstach.
+                QString tekst = ItemModel->item(i,j)
+                                ? ItemModel->item(i,j)->text()
+                                : QString();
+                stream << tekst;
             }
         }
         file.close();
@@ -814,6 +823,7 @@ void FindNewCamera::czytajListaKamer()
     if (file.open(QIODevice::ReadOnly))
     {
         QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_6_0);
         qint32 n, m;
         stream >> n >> m;
         ItemModel->setRowCount(n);
@@ -821,8 +831,9 @@ void FindNewCamera::czytajListaKamer()
 
         for (int i = 0; i < n ; ++i) {
             for (int j = 0; j < m; j++) {
-                QStandardItem *item = new QStandardItem;
-                item->read(stream);
+                QString tekst;
+                stream >> tekst;
+                QStandardItem *item = new QStandardItem(tekst);
                 item->setTextAlignment(Qt::AlignCenter);
                 ItemModel->setItem(i, j, item);
             }
@@ -831,6 +842,5 @@ void FindNewCamera::czytajListaKamer()
         ileWierszy = ItemModel->rowCount();
     }else{
         ileWierszy = 0;
-        //QMessageBox::information(this, "INFORMACJA", "Nie ma jeszcze żadnych wpisów. Wpisz swoją firmę");
     }
 }
