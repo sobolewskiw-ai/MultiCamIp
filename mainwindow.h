@@ -9,7 +9,10 @@
 #include <QListWidget>
 #include <QTimer>
 #include <QResizeEvent>
+#include <QStandardItemModel>
+#include <QMediaPlayer>
 
+class MediaMTXManager;
 class HttpSerwer;
 
 class MainWindow : public QMainWindow
@@ -21,6 +24,9 @@ protected:
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+    void czytajKameryDat(QString adres);
+    QStandardItemModel *ItemModel = nullptr;
+    QStandardItemModel *ItemModelSerweryDat = nullptr;
     QString appHomePath;
 
 private slots:
@@ -35,10 +41,19 @@ private:
     void ukryjPokazPanelPodglad();
     void ukryjPokazPanelNagrania();
     void tworzeWidgetNagrania(int ileKamer);
+    void zapiszSerweryDat();
+    void czytajSerweryDat();
+    void createWidgetListaLivekamery();
     bool statusUkrytySerwer = true;
     bool statusUkrytyPodglad = true;
     bool statusUkrytyNagrania = true;
+    MediaMTXManager *mtx;
     QIcon createGridIcon(int rows, int cols);
+    QVector<QWidget *> widgetVectr;
+    QVector<QVBoxLayout *> widgetLayutVector;
+    QVector<QListWidgetItem *> itemVector;
+    QVector<QLabel *> labelVideoVector;
+    QVector<QMediaPlayer *> playerVector;
     QString stylesheetPushButton;
     QString stylesheetPushButtonRed;
     QString stylesheetLabelSelectedBlue;
@@ -56,6 +71,7 @@ private:
     QGridLayout *grid;
     QLabel *centralLabel;
     QToolBar *toolbar;
+//    QStandardItemModel *ItemModel = nullptr;
     // Timery animacji wysuwania paneli - przechowywane jako pola,
     // żeby móc zatrzymać poprzednią animację przy szybkim przeklikaniu.
     QTimer *animTimerSerwer = nullptr;

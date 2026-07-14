@@ -9,12 +9,14 @@ SOURCES += \
     findnewcamera.cpp \
     httpserwer.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    mediamtxmanager.cpp
 
 HEADERS += \
     findnewcamera.h \
     httpserwer.h \
-    mainwindow.h
+    mainwindow.h \
+    mediamtxmanager.h
 
 #Dynamiczne opencv2
 unix:!macx: LIBS += -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lopencv_calib3d
@@ -22,6 +24,7 @@ unix:!macx: LIBS += -L/usr/local/lib -lopencv_features2d -lopencv_flann -lopencv
 INCLUDEPATH += /usr/local/include/opencv4
 DEPENDPATH += /usr/local/include/opencv4
 
+LIBS += -larchive
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
