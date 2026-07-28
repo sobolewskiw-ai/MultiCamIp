@@ -394,17 +394,20 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     out << "api: yes\n";
     out << "apiAddress: :9997\n";
     out << "rtspAddress: :8554\n";
-    out << "protocols: [tcp,udp]\n";
+    //out << "protocols: [tcp,udp]\n";  "rtspTransports: [tcp, udp]\n";
+    out << "rtspTransports: [tcp, udp]\n";
+
     out << "readTimeout: 30s\n";
     out <<  "writeTimeout: 30s\n";
-    out << "readBufferCount: 2048\n";
+    //out << "readBufferCount: 2048\n";  "writeQueueSize: 2048\n";
+    out << "writeQueueSize: 2048\n";
     //out << "readBufferCount: 32\n";
     out << "\n";
 
     out << "authMethod: internal\n";
     out << "authInternalUsers:\n";
     out << "- user: any\n";
-    out << "  pass:\n";
+    out << "  pass: \"\"\n";
     out << "  ips: []\n";
     out << "  permissions:\n";
     out << "  - action: publish\n";
@@ -438,7 +441,8 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
         qDebug()<< name<< url;
         out << "  " << name << ":\n";
         out << "    source: " << url << "\n";
-        out << "    sourceProtocol: tcp\n";
+        //out << "    sourceProtocol: tcp\n";  "rtspTransport: tcp\n";
+        out << "    rtspTransport: tcp\n";
         out << "    sourceOnDemand: no\n";
         out << "    sourceOnDemandCloseAfter: 10s\n";
         //stara część

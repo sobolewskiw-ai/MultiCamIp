@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
 
-    w.resize(screenGeometry.size()*0.6);
+    w.resize(screenGeometry.size()*0.8);
     //w.move(screenGeometry.width()*0.1,screenGeometry.height()*0.07);
     w.move((screenGeometry.width()-w.width())/2,0);
     w.setMinimumSize(screenGeometry.size()*0.6);

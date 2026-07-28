@@ -23,7 +23,6 @@
 FfmpegReaderThread::FfmpegReaderThread(const QString &path, QSize size, QObject *parent)
     : QThread(parent), pipePath(path), frameSize(size)
 {
-
 }
 
 void FfmpegReaderThread::stop()
@@ -93,6 +92,11 @@ void FfmpegPlayer::setLabel(QLabel *label) { targetLabel = label; }
 void FfmpegPlayer::setUrl(const QString &url) { rtspUrl = url; }
 bool FfmpegPlayer::isPlaying() const { return playing; }
 
+void FfmpegPlayer::setAspectRatioMode(Qt::AspectRatioMode mode)
+{
+    aspectRatioMode = mode;
+}
+
 void FfmpegPlayer::setAudioEnabled(bool enabled)
 {
     audioEnabled = enabled;
@@ -104,8 +108,10 @@ void FfmpegPlayer::setAudioEnabled(bool enabled)
             audioProcess->deleteLater();
             audioProcess = nullptr;
         }
-        if (audioEnabled)
+        if (audioEnabled){
             startAudioProcess();
+            qDebug()<< "AUDIO START";
+        }
     }
 }
 
@@ -168,11 +174,6 @@ void FfmpegPlayer::stop()
     }
 
     emit playbackStopped();
-}
-
-void FfmpegPlayer::setAspectRatioMode(Qt::AspectRatioMode mode)
-{
-    aspectRatioMode = mode;
 }
 
 // ---------------------------------------------------------------------------
@@ -344,8 +345,8 @@ void FfmpegPlayer::startVideoProcess()
     videoProcess = new QProcess(this);
 
     connect(videoProcess, &QProcess::readyReadStandardError, this, [this](){
-    //    if (videoProcess)
-        //    qDebug() << "FFmpeg:" << videoProcess->readAllStandardError().left(300);
+        if (videoProcess)
+            qDebug() << "FFmpeg:" << videoProcess->readAllStandardError().left(300);
     });
     connect(videoProcess, &QProcess::errorOccurred,
             this, &FfmpegPlayer::onVideoProcessError);
@@ -354,6 +355,7 @@ void FfmpegPlayer::startVideoProcess()
             this, &FfmpegPlayer::onVideoProcessFinished);
 
     QStringList args = {
+        "-nostats",
         "-y",
         "-fflags",        "nobuffer+discardcorrupt",
         "-flags",         "low_delay",
@@ -399,25 +401,56 @@ void FfmpegPlayer::startVideoProcess()
     qDebug() << "FfmpegPlayer: odtwarzanie startuje -" << rtspUrl;
 }
 
+// void FfmpegPlayer::startAudioProcess()
+// {
+//     audioProcess = new QProcess(this);
+//     audioProcess->start(FFMPEG_BIN, {
+//         "-fflags",  "nobuffer",
+//         "-rtsp_transport", "tcp",
+//         "-i",       rtspUrl,
+//         "-vn",
+//         "-acodec",  "pcm_s16le",
+//         "-ar",      "44100",
+//         "-ac",      "2",
+//         "-f",       "pulse",
+//         "default"
+//     });
+//     if (!audioProcess->waitForStarted(3000)) {
+//         qWarning() << "FfmpegPlayer: nie udało się uruchomić audio FFmpeg";
+//         audioProcess->deleteLater();
+//         audioProcess = nullptr;
+//     }
+// }
+
 void FfmpegPlayer::startAudioProcess()
 {
     audioProcess = new QProcess(this);
+
+    connect(audioProcess, &QProcess::readyReadStandardError,
+            this, [this]()
+            {
+                qDebug() << "AUDIO:"
+                         << audioProcess->readAllStandardError();
+            });
+
     audioProcess->start(FFMPEG_BIN, {
-        "-fflags",  "nobuffer",
-        "-rtsp_transport", "tcp",
-        "-i",       rtspUrl,
-        "-vn",
-        "-acodec",  "pcm_s16le",
-        "-ar",      "44100",
-        "-ac",      "2",
-        "-f",       "pulse",
-        "default"
-    });
+                                        "-fflags", "nobuffer",
+                                        "-rtsp_transport", "tcp",
+                                        "-i", rtspUrl,
+                                        "-vn",
+                                        "-acodec", "pcm_s16le",
+                                        "-ar", "44100",
+                                        "-ac", "2",
+                                        "-f", "pulse",
+                                        "default"
+                                    });
+
     if (!audioProcess->waitForStarted(3000)) {
-        qWarning() << "FfmpegPlayer: nie udało się uruchomić audio FFmpeg";
-        audioProcess->deleteLater();
-        audioProcess = nullptr;
+        qWarning() << "Nie udało się uruchomić audio";
+        return;
     }
+
+    qDebug() << "PID audio:" << audioProcess->processId();
 }
 
 void FfmpegPlayer::stopAll()
@@ -459,9 +492,8 @@ void FfmpegPlayer::onFrameReady(const QImage &frame)
     if (!targetLabel || !playing) return;
     QPixmap pix = QPixmap::fromImage(frame).scaled(
         targetLabel->size(),
+        //Qt::KeepAspectRatio,
         aspectRatioMode,
-    //    Qt::KeepAspectRatio,
-    //    Qt::IgnoreAspectRatio,
         Qt::SmoothTransformation
     );
     targetLabel->setPixmap(pix);

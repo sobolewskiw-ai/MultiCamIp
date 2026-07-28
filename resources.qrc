@@ -8,5 +8,11 @@
         <file>icons/stop.png</file>
         <file>icons/szukaj.png</file>
         <file>icons/ustawienia.png</file>
+        <file>icons/resize.svg</file>
+        <file>icons/speaker.svg</file>
+        <file>icons/speaker-high.svg</file>
+        <file>icons/speaker-low.svg</file>
+        <file>icons/speaker-medium.svg</file>
+        <file>icons/speaker-muted.svg</file>
     </qresource>
 </RCC>

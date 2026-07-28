@@ -11,6 +11,8 @@
 #include <QResizeEvent>
 #include <QStandardItemModel>
 #include <QGroupBox>
+#include <QPushButton>
+#include <QTableWidget>
 
 class MediaMTXManager;
 class HttpSerwer;
@@ -22,6 +24,7 @@ class MainWindow : public QMainWindow
 protected:
     void resizeEvent(QResizeEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -45,6 +48,7 @@ private:
     void zapiszSerweryDat();
     void czytajSerweryDat();
     void createWidgetListaLivekamery();
+    void createWidgetUstawienia();
     bool statusUkrytySerwer = true;
     bool statusUkrytyPodglad = true;
     bool statusUkrytyNagrania = true;
@@ -55,8 +59,11 @@ private:
     QVector<QListWidgetItem *> itemVector;
     QVector<QLabel *> labelVideoVector;
     QVector<FfmpegPlayer *> playerVector;
+    QVector<bool> ignoreAspectRatio; // stan IgnoreAspectRatio per kamera (dla btnResize)
     QVector<QWidget *> kameraWidgetVector;
-    QVector<QGroupBox *> groupBoxVector;
+    QVector<QSlider *> sliderVector;
+    QVector<QPushButton *> btnAudioOnVector;
+    QVector<bool> audioEnabledVector;
     QString stylesheetPushButton;
     QString stylesheetPushButtonRed;
     QString stylesheetLabelSelectedBlue;
@@ -67,8 +74,11 @@ private:
     QWidget *drawerWidgetPodglad;
     QWidget *drawerWidgetNagrania;
     QWidget *livePodgladWidget = nullptr;
-    QLabel *powiekszonyLabel = nullptr;  // nullptr = widok siatki, != nullptr = tryb powiększenia
-//    QString appHomePath;
+    QTableWidget *table;
+    int liczba = 0;
+    QLabel *powiekszonyLabel = nullptr;   // nullptr = widok siatki, != nullptr = tryb powiększenia
+    QWidget *powiekszonyWidget = nullptr; // kameraWidget powiększonego labela (zawiera gbox)
+    //    QString appHomePath;
     QListWidget *menuListSerwer;
     QListWidget *menuListPodglad;
     QHBoxLayout *rootLayout;

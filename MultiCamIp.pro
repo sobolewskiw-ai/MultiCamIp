@@ -35,3 +35,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resources.qrc
+
+DISTFILES +=
+
+# CONFIG(debug, debug|release) {
+#     QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
+#     QMAKE_LFLAGS += -fsanitize=address
+# }

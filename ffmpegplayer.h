@@ -59,10 +59,10 @@ public:
     void setUrl(const QString &url);
     void setAudioEnabled(bool enabled);
     bool isPlaying() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
     void play();
     void stop();
-    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
 signals:
     void playbackStarted();
@@ -89,13 +89,13 @@ private:
     QProcess            *videoProcess  = nullptr;
     QProcess            *audioProcess  = nullptr;
     FfmpegReaderThread  *readerThread  = nullptr;
+    Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio;
 
     QString  rtspUrl;
     QString  pipePath;
     bool     audioEnabled  = false;
     QSize    frameSize;
     std::atomic<bool> playing{false};
-    Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio;
 
     // Reconnect
     QTimer  *reconnectTimer  = nullptr;   // tyka co 1s
