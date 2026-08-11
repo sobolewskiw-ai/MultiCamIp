@@ -25,7 +25,10 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QFileDialog>
-
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QSettings>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -57,13 +60,17 @@ MainWindow::MainWindow(QWidget *parent)
         itemVector.clear();
         liczba = 0;
         for(int x =0; x < playerVector.size(); x++){
-            playerVector[x]->stop();
+            // KRYTYCZNA POPRAWKA (null-deref): playerVector bywa celowo
+            // dopełniany nullptr-ami (rezerwacja slotu przed utworzeniem
+            // realnego FfmpegPlayer) - wywołanie ->stop() bez sprawdzenia
+            // powodowało crash.
+            if (playerVector[x])
+                playerVector[x]->stop();
         }
         mtx->startMtx();
         if (!fileWatcher.files().contains(kameradata))
             fileWatcher.addPath(kameradata);
     });
-
 
     stylesheetPushButton =
         "QPushButton {"
@@ -864,7 +871,10 @@ void MainWindow::setupUi()
     qDebug()<< "test 3";
             liczba = 0;
             for(int x =0; x < playerVector.size(); x++){
-                playerVector[x]->stop();
+                // KRYTYCZNA POPRAWKA (null-deref): patrz komentarz przy
+                // analogicznej pętli w konstruktorze MainWindow.
+                if (playerVector[x])
+                    playerVector[x]->stop();
     qDebug()<< "test 4" << x;
             }
         });
@@ -1922,7 +1932,10 @@ void MainWindow::createWidgetUstawienia()
     qDebug()<< "test 3";
         liczba = 0;
         for(int x =0; x < playerVector.size(); x++){
-            playerVector[x]->stop();
+            // KRYTYCZNA POPRAWKA (null-deref): patrz komentarz przy
+            // analogicznej pętli w konstruktorze MainWindow.
+            if (playerVector[x])
+                playerVector[x]->stop();
         }
 
         ItemModel->clear();
@@ -2111,30 +2124,40 @@ void MainWindow::createWidgetUstawienia()
         for(int x = 0; x < table->rowCount(); x++)
         {
             if(x != row){
-                QString nazwa = table->item(x, 1)
-                    ? table->item(x, 1)->text()
-                    : QString();
-
-                QString adres = table->item(x, 2)
-                    ? table->item(x, 2)->text()
-                    : QString();
-
-                if (nazwa.compare(lineEditNazwa->text().trimmed().remove(' '),Qt::CaseInsensitive) == 0)
+                QString nazwa = table->item(x,1)->text();
+                if(nazwa == lineEditNazwa->text().trimmed())
                 {
-                    QMessageBox::information(
-                        nullptr,
-                        "UWAGA",
-                        R"(
-                            KAMERA O TEJ NAZWIE
-                            JUŻ ISTNIEJE
-                            ZMIEŃ NAZWĘ KAMERY)"
-                        );
-
-                    return;
-                }else if(adres.compare(lineEditAdres->text().trimmed().remove(' '),Qt::CaseInsensitive) == 0){
                     QMessageBox::information(nullptr,"UWAGA",R"(
-                        KAMERA O TYM STRUMIENIU
-                        JUŻ ISTNIEJE)");
+                        KAMERA O TEJ NAZWIE
+                        JUŻ ISTNIEJE
+                        ZMIEŃ NAZWĘ KAMERY)");
+                    return;
+                }
+            }
+        }
+        // POPRAWKA (blokada duplikatu adresu): większość tanich kamer
+        // IP/MJPEG po HTTP (np. "videostream.cgi") obsługuje TYLKO JEDNO
+        // jednoczesne połączenie, a nawet dla RTSP dodanie tej samej kamery
+        // dwa razy nie ma sensu (dubluje obciążenie łącza/kamery i zapis
+        // nagrań). Dodanie tej samej kamery pod dwiema różnymi nazwami
+        // powodowało wcześniej trudny do zdiagnozowania błąd "404 Not
+        // Found" dopiero przy próbie odtwarzania (drugi wewnętrzny
+        // publisher MediaMTX nigdy nie mógł się połączyć - kamera zajęta
+        // przez pierwszego). Blokujemy to na starcie, tak jak duplikat
+        // nazwy powyżej - bez możliwości zapisania.
+        {
+            QString noweAdres = lineEditAdres->text().trimmed();
+            for (int x = 0; x < table->rowCount(); x++) {
+                if (x != row && table->item(x, 2)
+                    && table->item(x, 2)->text().trimmed() == noweAdres) {
+                    QString istniejacaNazwa = table->item(x, 1)
+                                                   ? table->item(x, 1)->text()
+                                                   : QString();
+                    QMessageBox::information(
+                        nullptr, "UWAGA",
+                        QString("KAMERA O TAKIM ADRESIE JUŻ ISTNIEJE\n"
+                                "(\"%1\")\n"
+                                "ZMIEŃ ADRES KAMERY").arg(istniejacaNazwa));
                     return;
                 }
             }
@@ -2264,10 +2287,15 @@ qDebug()<<"6";
 
 std::tuple<bool, QString, QString> MainWindow::ffprobeTest(const QString &rtspUrl)
 {
+    // DROBNA POPRAWKA (spójność): "-rtsp_transport" jest opcją tylko
+    // demuxera RTSP - dla adresów HTTP/MJPEG niektóre wersje ffprobe mogą
+    // zgłosić błąd "Option not found" (tak jak zawsze robi to ffmpeg -
+    // patrz analogiczna poprawka w FfmpegPlayer::probeFrameSize()).
     QProcess process;
-    QStringList args = {
-        "-v", "error",
-        "-rtsp_transport", "tcp",
+    QStringList args = {"-v", "error"};
+    if (rtspUrl.startsWith("rtsp://", Qt::CaseInsensitive))
+        args << "-rtsp_transport" << "tcp";
+    args += QStringList{
         "-timeout", "5000000",
         "-select_streams", "v:0",
         "-show_entries", "stream=width,height,r_frame_rate",
@@ -2307,6 +2335,70 @@ std::tuple<bool, QString, QString> MainWindow::ffprobeTest(const QString &rtspUr
     return {true, resolution, fps};
 }
 
+// KRYTYCZNA POPRAWKA BEZPIECZEŃSTWA: HttpSerwer wymaga teraz nagłówka
+// "X-Auth-Token" do odczytu/zapisu plików .dat (patrz httpserwer.h/.cpp).
+// Ta metoda dostarcza właściwy token w zależności od tego, czy łączymy się
+// z własnym, lokalnym serwerem (token znamy automatycznie), czy z serwerem
+// innej instancji aplikacji w sieci (token trzeba podać ręcznie raz -
+// zapisujemy go potem w QSettings, żeby nie pytać przy każdym połączeniu).
+QString MainWindow::resolveAuthTokenForHost(const QUrl &url)
+{
+    const QString host = url.host();
+    if (host == "localhost" || host == "127.0.0.1") {
+        QString string = httpSerwer ? httpSerwer->authToken() : QString();
+        qDebug()<<"localhost token autoryzacji = " << string;
+        return string;//httpSerwer ? httpSerwer->authToken() : QString();
+    }
+
+    QSettings settings("MojaFirma", "CameraSerwer");
+    const QString key = "remoteAuthToken_" + host;
+    QString saved = settings.value(key).toString();
+     if (!saved.isEmpty())
+         return saved;
+
+    bool ok = false;
+    QString entered = QInputDialog::getText(
+        this,
+        "Token uwierzytelniający",
+        QString("Serwer %1 wymaga tokenu dostępu (nagłówek X-Auth-Token).\n"
+                "Skopiuj go z pliku .http_auth_token w katalogu aplikacji\n"
+                "na urządzeniu, z którym się łączysz:").arg(host),
+        QLineEdit::Normal, QString(), &ok);
+    if (ok && !entered.trimmed().isEmpty()) {
+        entered = entered.trimmed();
+        settings.setValue(key, entered);
+        return entered;
+    }
+    return QString();
+}
+
+// QString MainWindow::resolveAuthTokenForHostPopraw(const QUrl &url)
+// {
+//     const QString host = url.host();
+//     if (host == "localhost" || host == "127.0.0.1") {
+//         return httpSerwer ? httpSerwer->authToken() : QString();
+//     }
+
+//     QSettings settings("MojaFirma", "CameraSerwer");
+//     const QString key = "remoteAuthToken_" + host;
+//     QString saved = settings.value(key).toString();
+
+//     bool ok = false;
+//     QString entered = QInputDialog::getText(
+//         this,
+//         "Token uwierzytelniający",
+//         QString("Serwer %1 wymaga tokenu dostępu (nagłówek X-Auth-Token).\n"
+//                 "Skopiuj go z pliku .http_auth_token w katalogu aplikacji\n"
+//                 "na urządzeniu, z którym się łączysz:").arg(host),
+//         QLineEdit::Normal, QString(saved), &ok);
+//     if (ok && !entered.trimmed().isEmpty()) {
+//         entered = entered.trimmed();
+//         settings.setValue(key, entered);
+//         return entered;
+//     }
+//     return QString();
+// }
+
 bool MainWindow::czytajKameryDat(const QString &adres)
 {
     if (!ItemModel)
@@ -2317,9 +2409,30 @@ bool MainWindow::czytajKameryDat(const QString &adres)
     }
     QNetworkAccessManager manager;
     QNetworkRequest request((QUrl(adres)));
+    QString authToken = resolveAuthTokenForHost(QUrl(adres));
+    qDebug()<< "token autoryzacji:"<<authToken.toUtf8();
+    if (!authToken.isEmpty())
+        request.setRawHeader("X-Auth-Token", authToken.toUtf8());
+    else
+        qWarning() << "MainWindow::czytajKameryDat: brak tokenu dla" << adres
+                   << "- serwer prawdopodobnie odpowie 401 Unauthorized";
     QNetworkReply *reply = manager.get(request);
+    // POWAŻNA POPRAWKA (zawieszenie UI): wcześniej ta zagnieżdżona
+    // QEventLoop nie miała żadnego limitu czasu - jeśli serwer pod `adres`
+    // nie odpowiadał (np. zapora sieciowa cicho odrzucała pakiety), cała
+    // aplikacja wisiała w nieskończoność. Dodajemy awaryjny timer 8s, który
+    // przerywa oczekiwanie i traktuje to jak błąd sieci.
     QEventLoop loop;
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit); loop.exec();
+    QTimer timeoutTimer;
+    timeoutTimer.setSingleShot(true);
+    connect(&timeoutTimer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    timeoutTimer.start(8000);
+    loop.exec();
+    if (!reply->isFinished()) {
+        // Timer wygasł zanim reply się zakończył - realny timeout.
+        reply->abort();
+    }
     if (reply->error() != QNetworkReply::NoError) {
         qDebug() << reply->errorString();
         QMessageBox::information( this, "INFO", reply->errorString() +
@@ -2327,8 +2440,10 @@ bool MainWindow::czytajKameryDat(const QString &adres)
                     "- zły adres serwera\n"
                     "- brak internetu\n"
                     "- serwer nie uruchomiony" );
+    //    resolveAuthTokenForHostPopraw(QUrl(adres));
         reply->deleteLater();
         ItemModel->clear();
+
         return false;
     }
     QByteArray data = reply->readAll();
@@ -2395,15 +2510,32 @@ bool MainWindow::zapiszKameryDat(const QString &adres)
     QNetworkRequest request((QUrl(adres)));
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       "application/octet-stream");
+    QString authToken = resolveAuthTokenForHost(QUrl(adres));
+    if (!authToken.isEmpty())
+        request.setRawHeader("X-Auth-Token", authToken.toUtf8());
+    else
+        qWarning() << "MainWindow::zapiszKameryDat: brak tokenu dla" << adres
+                   << "- serwer prawdopodobnie odpowie 401 Unauthorized";
 
     QNetworkReply *reply = manager.put(request, data);
 
+    // POWAŻNA POPRAWKA (zawieszenie UI): jak w czytajKameryDat() - dodajemy
+    // awaryjny timeout, żeby brak odpowiedzi zdalnego serwera nie zawieszał
+    // aplikacji w nieskończoność.
     QEventLoop loop;
+    QTimer timeoutTimer;
+    timeoutTimer.setSingleShot(true);
+    connect(&timeoutTimer, &QTimer::timeout, &loop, &QEventLoop::quit);
 
     connect(reply, &QNetworkReply::finished,
             &loop, &QEventLoop::quit);
 
+    timeoutTimer.start(8000);
     loop.exec();
+
+    if (!reply->isFinished()) {
+        reply->abort();
+    }
 
     if (reply->error() != QNetworkReply::NoError) {
 

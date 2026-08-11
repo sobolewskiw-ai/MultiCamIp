@@ -82,10 +82,26 @@ private slots:
 private:
     void startVideoProcess();
     void startAudioProcess();
-    void stopAll();
+    // POWAŻNA POPRAWKA: stopAll() jest wywoływane zarówno przy
+    // ostatecznym stop() (użytkownik/aplikacja kończy odtwarzanie - wtedy
+    // pipePath powinno zostać wyczyszczone), jak i przy KAŻDEJ próbie
+    // reconnect (startReconnect() - wtedy attemptReconnect() nadal
+    // potrzebuje znać dotychczasową ścieżkę FIFO). Wcześniej stopAll()
+    // zawsze czyściło pipePath, więc podczas reconnectu attemptReconnect()
+    // dostawało pusty QString, co dawało "QFile::remove: Empty or null
+    // file name" i fałszywy fallback na nazwę z sufiksem "_rN".
+    void stopAll(bool clearPipePath = true);
     void startReconnect();            // inicjuje tryb reconnect
     void attemptReconnect();          // jedna próba połączenia
-    QSize probeFrameSize();
+    // Statyczna (nie dotyka `this`) - bezpieczna do wywołania z wątku tła
+    // (QThreadPool), gdzie `this` mogłoby już zostać zniszczone.
+    static QSize probeFrameSize(const QString &rtspUrl);
+    // Bezpiecznie "odłącza" wątek czytający FIFO, który nie zakończył się
+    // w rozsądnym czasie - Qt ostrzega, że usunięcie wciąż działającego
+    // QThread prawdopodobnie kończy się crashem, więc zamiast tego
+    // odłączamy go od `this` (żeby nie został usunięty razem z rodzicem)
+    // i pozwalamy mu samodzielnie się posprzątać (deleteLater na finished()).
+    void detachRunningReaderThread();
     void showReconnectLabel(int secondsLeft);
 
     QLabel              *targetLabel   = nullptr;

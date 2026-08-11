@@ -32,11 +32,23 @@ private:
     bool rozpakuj(const QString &archiwum,const QString &katalog);
     void zapiszMtxVersion();
     QString czytajMtxVersion();
+    QString generateOrLoadAdminPassword();
+
+    // Bezpieczne osadzanie tekstu pochodzącego od użytkownika (adres/login/
+    // hasło kamery) wewnątrz apostrofowanego skryptu bash generowanego dla
+    // MediaMTX - chroni przed wstrzyknięciem poleceń powłoki.
+    static QString shellEscapeSingleQuoted(const QString &input);
+    // Sanityzacja nazwy kamery używanej jako klucz YAML i nazwa katalogu -
+    // dopuszcza tylko bezpieczny zestaw znaków.
+    static QString sanitizeYamlKey(const QString &input);
+
 //    void startMtx();
     MainWindow *mainwindow = nullptr;
     QString installDirMtx;
     QString binaryPath;
     QString versionPath;
+    QString adminPasswordPath;
+    QString adminPassword;
     QString version;
     QString nazwaPliku;
     QString downloadUrl;

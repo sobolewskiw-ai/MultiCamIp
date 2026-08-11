@@ -1,6 +1,7 @@
 #include "httpserwer.h"
 
 #include <QHttpServer>
+#include <QHttpServerRequest>
 #include <QHttpServerResponse>
 #include <QTcpServer>
 #include <QHostAddress>
@@ -8,6 +9,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+#include <QRandomGenerator>
 
 HttpSerwer::HttpSerwer(QObject *parent)
     : QObject{parent}
@@ -19,6 +21,56 @@ HttpSerwer::~HttpSerwer()
     stop();
 }
 
+QString HttpSerwer::loadOrCreateAuthToken(const QString &homePath)
+{
+    // KRYTYCZNA POPRAWKA BEZPIECZEŃSTWA: serwer wcześniej udostępniał
+    // GET/PUT na plikach .dat (zawierających hasła kamer w jawnej postaci)
+    // bez jakiejkolwiek autoryzacji, na wszystkich interfejsach sieciowych.
+    // Generujemy/wczytujemy token, który trzeba podać w nagłówku
+    // "X-Auth-Token", żeby uzyskać dostęp do tych endpointów.
+    QDir dir(homePath);
+    if (!dir.exists())
+        dir.mkpath(homePath);
+
+    const QString tokenPath = homePath + "/.http_auth_token";
+qDebug()<<"token path"<<tokenPath;
+    QFile file(tokenPath);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString saved = QString::fromUtf8(file.readAll()).trimmed();
+        file.close();
+        if (saved.size() >= 24){
+            qDebug()<< "PLIK OTWORZONY I ODCZYTANY HASŁO = "<< saved;
+            return saved;
+        }
+    }
+    qDebug()<< "działa";
+    const QString chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+    QString token;
+    token.reserve(32);
+    for (int i = 0; i < 32; ++i)
+        token.append(chars.at(QRandomGenerator::global()->bounded(chars.size())));
+qDebug()<< "TOKEN = " << token;
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        file.write(token.toUtf8());
+        file.close();
+        QFile::setPermissions(tokenPath,
+                              QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+    } else {
+        qWarning() << "HttpSerwer: nie udało się zapisać tokenu uwierzytelniającego w"
+                   << tokenPath;
+    }
+    return token;
+}
+
+bool HttpSerwer::isAuthorized(const QHttpServerRequest &request) const
+{
+    if (authToken_.isEmpty())
+        return false;
+    const QByteArray provided = request.value("X-Auth-Token");
+    return provided == authToken_.toUtf8();
+}
+
 bool HttpSerwer::start(const QString &homePath, quint16 port)
 {
     if (isRunning()) {
@@ -27,6 +79,10 @@ bool HttpSerwer::start(const QString &homePath, quint16 port)
     }
 
     appHomePath = homePath;
+    authToken_ = loadOrCreateAuthToken(homePath);
+    qInfo() << "HttpSerwer: token uwierzytelniający (wymagany w nagłówku "
+               "X-Auth-Token do odczytu/zapisu plików .dat) zapisany w:"
+            << (homePath + "/.http_auth_token");
 
     httpServer = new QHttpServer(this);
 
@@ -43,38 +99,53 @@ bool HttpSerwer::start(const QString &homePath, quint16 port)
         return QHttpServerResponse("text/plain; charset=utf-8", status.toUtf8());
     });
 
+    // Wszystkie trasy .dat wymagają teraz nagłówka "X-Auth-Token" (patrz
+    // loadOrCreateAuthToken/isAuthorized) - pliki te zawierają hasła kamer.
+    auto nieautoryzowana = []() {
+        return QHttpServerResponse(
+            "text/plain; charset=utf-8",
+            QByteArrayLiteral("Brak lub nieprawidlowy token (naglowek X-Auth-Token)"),
+            QHttpServerResponse::StatusCode::Unauthorized);
+    };
+
     httpServer->route("/kamery.dat",
                       QHttpServerRequest::Method::Get,
-                      [this]() {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return odczytajPlikDat("kamery.dat");
                       });
 
     httpServer->route("/strumienie.dat",
                       QHttpServerRequest::Method::Get,
-                      [this]() {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return odczytajPlikDat("strumienie.dat");
                       });
 
     httpServer->route("/strefa.dat",
                       QHttpServerRequest::Method::Get,
-                      [this]() {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return odczytajPlikDat("strefa.dat");
                       });
     httpServer->route("/kamery.dat",
                       QHttpServerRequest::Method::Put,
-                      [this](const QHttpServerRequest &request) {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return zapiszPlikDat("kamery.dat", request.body());
                       });
 
     httpServer->route("/strumienie.dat",
                       QHttpServerRequest::Method::Put,
-                      [this](const QHttpServerRequest &request) {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return zapiszPlikDat("strumienie.dat", request.body());
                       });
 
     httpServer->route("/strefa.dat",
                       QHttpServerRequest::Method::Put,
-                      [this](const QHttpServerRequest &request) {
+                      [this, nieautoryzowana](const QHttpServerRequest &request) {
+                          if (!isAuthorized(request)) return nieautoryzowana();
                           return zapiszPlikDat("strefa.dat", request.body());
                       });
 

@@ -42,6 +42,12 @@ signals:
     void sygnalResize();
 
 private:
+    // Zwraca token "X-Auth-Token" potrzebny do odczytu/zapisu plików .dat
+    // na serwerze HTTP wskazanym przez url - dla własnego (lokalnego)
+    // serwera token jest znany automatycznie, dla zdalnego trzeba go podać
+    // ręcznie (zapamiętywany w QSettings). Patrz httpserwer.h.
+    QString resolveAuthTokenForHost(const class QUrl &url);
+//    QString resolveAuthTokenForHostPopraw(const class QUrl &url);
     void setupUi();
     void ukryjPokazPanelSerwer();
     void ukryjPokazPanelPodglad();

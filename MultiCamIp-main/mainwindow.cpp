@@ -2111,30 +2111,13 @@ void MainWindow::createWidgetUstawienia()
         for(int x = 0; x < table->rowCount(); x++)
         {
             if(x != row){
-                QString nazwa = table->item(x, 1)
-                    ? table->item(x, 1)->text()
-                    : QString();
-
-                QString adres = table->item(x, 2)
-                    ? table->item(x, 2)->text()
-                    : QString();
-
-                if (nazwa.compare(lineEditNazwa->text().trimmed().remove(' '),Qt::CaseInsensitive) == 0)
+                QString nazwa = table->item(x,1)->text();
+                if(nazwa == lineEditNazwa->text().trimmed())
                 {
-                    QMessageBox::information(
-                        nullptr,
-                        "UWAGA",
-                        R"(
-                            KAMERA O TEJ NAZWIE
-                            JUŻ ISTNIEJE
-                            ZMIEŃ NAZWĘ KAMERY)"
-                        );
-
-                    return;
-                }else if(adres.compare(lineEditAdres->text().trimmed().remove(' '),Qt::CaseInsensitive) == 0){
                     QMessageBox::information(nullptr,"UWAGA",R"(
-                        KAMERA O TYM STRUMIENIU
-                        JUŻ ISTNIEJE)");
+                        KAMERA O TEJ NAZWIE
+                        JUŻ ISTNIEJE
+                        ZMIEŃ NAZWĘ KAMERY)");
                     return;
                 }
             }

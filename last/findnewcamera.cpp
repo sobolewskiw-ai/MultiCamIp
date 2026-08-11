@@ -21,6 +21,7 @@
 #include <QDataStream>
 #include <QTextStream>
 #include <QThreadPool>
+#include <QUrl>
 
 #include <QSpinBox>
 #include <QLineEdit>
@@ -57,6 +58,18 @@ void CameraDataReader::czytajListaKamer()
         QDataStream stream(&file);
         qint32 n, m;
         stream >> n >> m;
+        // POWAŻNA POPRAWKA (brak walidacji danych z pliku): uszkodzony,
+        // obcięty albo pusty plik kamery.dat mógł dać tu śmieciowe/ujemne
+        // wartości n, m, przekazywane bez sprawdzenia wprost do
+        // setRowCount()/setColumnCount() (potencjalnie ogromna alokacja
+        // albo błędny stan modelu). Ta sama walidacja jest już stosowana
+        // w MainWindow::czytajKameryDat() - tu jej brakowało.
+        if (stream.status() != QDataStream::Ok || n < 0 || m < 0) {
+            qWarning() << "CameraDataReader: uszkodzony lub nieprawidłowy plik kamery.dat:"
+                       << (path + "kamery.dat");
+            file.close();
+            return;
+        }
         ItemModel->setRowCount(n);
         ItemModel->setColumnCount(m);
 
@@ -73,6 +86,26 @@ void CameraDataReader::czytajListaKamer()
 }
 
 // ============================================================
+
+namespace {
+// DROBNA POPRAWKA (prywatność): adresy RTSP/HTTP kamer mogą zawierać login
+// i hasło w jawnej postaci (rtsp://user:haslo@ip:port/...). Lista
+// wykrytych strumieni była wcześniej wyświetlana na ekranie z pełnym,
+// niezamaskowanym hasłem widocznym dla każdego patrzącego na ekran (np.
+// podczas prezentacji/zrzutu ekranu). Ta funkcja zwraca wersję adresu z
+// zamaskowanym hasłem WYŁĄCZNIE do wyświetlenia - prawdziwy, pełny URL
+// jest przechowywany osobno (Qt::UserRole) i używany do faktycznego
+// połączenia oraz zapisu kamery.
+QString maskCredentialsForDisplay(const QString &url)
+{
+    QUrl parsed(url);
+    if (!parsed.password().isEmpty()) {
+        parsed.setPassword(QStringLiteral("****"));
+        return parsed.toString();
+    }
+    return url;
+}
+} // namespace
 
 FindNewCamera::FindNewCamera(QWidget *parent)
     : QWidget{parent}
@@ -480,7 +513,15 @@ void FindNewCamera::buttonSkanuj_clicked()
                 validStreams << result;
         }
 
-        widgetListListaStrumieni->addItems(validStreams);
+        // DROBNA POPRAWKA (prywatność): wyświetlamy zamaskowane hasło,
+        // a prawdziwy URL trzymamy w Qt::UserRole (patrz
+        // maskCredentialsForDisplay() i konsumenci: buttonPlay_clicked(),
+        // buttonZapisz_cliced()).
+        for (const QString &realUrl : std::as_const(validStreams)) {
+            auto *item = new QListWidgetItem(maskCredentialsForDisplay(realUrl));
+            item->setData(Qt::UserRole, realUrl);
+            widgetListListaStrumieni->addItem(item);
+        }
 
         // progressDialog->close() może synchronicznie wyemitować canceled()
         // (Qt robi to przy programowym zamykaniu modalnego QDialog), co
@@ -530,7 +571,12 @@ void FindNewCamera::buttonPlay_clicked()
         QMessageBox::warning(this, "Błąd", "Nie wybrano strumienia!");
         return;
     }
-    std::string url = item->text().toStdString();
+    // DROBNA POPRAWKA: item->text() jest teraz zamaskowanym adresem (patrz
+    // maskCredentialsForDisplay()) - prawdziwy URL do połączenia jest w
+    // Qt::UserRole. Zachowujemy text() jako fallback dla wpisów, które z
+    // jakiegoś powodu nie mają ustawionego UserRole.
+    QVariant realUrlData = item->data(Qt::UserRole);
+    std::string url = (realUrlData.isValid() ? realUrlData.toString() : item->text()).toStdString();
 
     // cap.open() na RTSP/HTTP może blokować na minuty, jeśli adres nie
     // odpowiada (czeka na timeout połączenia TCP) - robione synchronicznie
@@ -583,6 +629,14 @@ void FindNewCamera::buttonZapisz_cliced()
     }
     if (!widgetListListaStrumieni->currentItem()) {
         QMessageBox::warning(this, "Błąd", "Nie wybrano strumienia z listy!");
+        return;
+    }
+    // DROBNA POPRAWKA (krucha konstrukcja): jeśli `parent` przekazany do
+    // FindNewCamera nie jest MainWindow, `mainwindow` zostaje nullptr (patrz
+    // konstruktor). Dalsza część tej metody odwołuje się do
+    // mainwindow->appHomePath - bez tego strażnika byłby to null-deref.
+    if (!mainwindow) {
+        QMessageBox::warning(this, "Błąd", "Brak referencji do okna głównego - nie można zapisać kamery");
         return;
     }
 
@@ -717,8 +771,16 @@ void FindNewCamera::buttonZapisz_cliced()
     //    listaKamer.clear();
         kamera.append(QString::number(ileWierszy));
         kamera.append(nazwaKamery);
-        kamera.append(widgetListListaStrumieni->currentItem()->text());
-        qDebug()<<"text " << widgetListListaStrumieni->currentItem()->text();
+        // DROBNA POPRAWKA: musimy zapisać PRAWDZIWY (niezamaskowany) URL,
+        // inaczej zapisana kamera miałaby w bazie hasło zastąpione "****"
+        // i przestałaby działać. Patrz maskCredentialsForDisplay().
+        {
+            QListWidgetItem *wybrany = widgetListListaStrumieni->currentItem();
+            QVariant realUrlData = wybrany->data(Qt::UserRole);
+            QString realUrl = realUrlData.isValid() ? realUrlData.toString() : wybrany->text();
+            kamera.append(realUrl);
+            qDebug() << "text " << realUrl;
+        }
         kamera.append("Size:"+QString::number(cap.get(cv::CAP_PROP_FRAME_WIDTH))+"x"+QString::number(cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
         kamera.append("FPS:"+QString::number(cap.get(cv::CAP_PROP_FPS))+"/s");
         kamera.append(zapiszDoLineEdit->text()+textEdit->text().trimmed()+"/");  //(QString::number(FileDurationMin));
@@ -826,6 +888,16 @@ void FindNewCamera::czytajListaKamer()
         stream.setVersion(QDataStream::Qt_6_0);
         qint32 n, m;
         stream >> n >> m;
+        // POWAŻNA POPRAWKA (brak walidacji danych z pliku): jak w
+        // CameraDataReader::czytajListaKamer() i zgodnie z tym, co już
+        // robi MainWindow::czytajKameryDat() - bez tego uszkodzony plik
+        // dawał śmieciowe n/m użyte wprost do rozmiaru modelu.
+        if (stream.status() != QDataStream::Ok || n < 0 || m < 0) {
+            qWarning() << "FindNewCamera: uszkodzony lub nieprawidłowy plik kamery.dat:"
+                       << (path + "kamery.dat");
+            ileWierszy = 0;
+            return;
+        }
         ItemModel->setRowCount(n);
         ItemModel->setColumnCount(m);
 

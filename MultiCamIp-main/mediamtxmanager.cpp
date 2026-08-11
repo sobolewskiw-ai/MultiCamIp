@@ -384,461 +384,128 @@ void MediaMTXManager::pobieramMtxmanager(const QString &url, const QString &zapi
 
 void MediaMTXManager::generateConfig(QAbstractItemModel* model)
 {
-    const QString configPath = installDirMtx + "/mediamtx.yml";
-
+    QString configPath = installDirMtx + "/mediamtx.yml";
     QFile file(configPath);
-
-    qDebug() << "plik konfiguracji:" << configPath;
-
+    qDebug()<<"plik konfiguracji"<<configPath;
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qWarning()
-        << "Nie można otworzyć pliku konfiguracji:"
-        << configPath;
-
         return;
-    }
 
     QTextStream out(&file);
 
-    // ============================================================
-    // GLOBAL SETTINGS
-    // ============================================================
-
+    // --- GLOBAL SETTINGS ---;
     out << "logLevel: info\n";
-
     out << "api: yes\n";
     out << "apiAddress: :9997\n";
-
     out << "rtspAddress: :8554\n";
+    //out << "protocols: [tcp,udp]\n";  "rtspTransports: [tcp, udp]\n";
     out << "rtspTransports: [tcp, udp]\n";
 
     out << "readTimeout: 30s\n";
-    out << "writeTimeout: 30s\n";
+    out <<  "writeTimeout: 30s\n";
+    //out << "readBufferCount: 2048\n";  "writeQueueSize: 2048\n";
     out << "writeQueueSize: 2048\n";
-
+    //out << "readBufferCount: 32\n";
     out << "\n";
 
-
-    // ============================================================
-    // AUTH
-    // ============================================================
-
     out << "authMethod: internal\n";
-
     out << "authInternalUsers:\n";
-
-    // ------------------------------------------------------------
-    // Użytkownik kamer / odczyt
-    // ------------------------------------------------------------
-
     out << "- user: any\n";
     out << "  pass: \"\"\n";
     out << "  ips: []\n";
     out << "  permissions:\n";
-
     out << "  - action: publish\n";
+    //out << "  path:\n";
     out << "  - action: read\n";
+    //out << "  path:\n";
     out << "  - action: playback\n";
-
-    // ------------------------------------------------------------
-    // Administrator API
-    // ------------------------------------------------------------
+    //out << "  path:\n";
 
     out << "- user: admin\n";
     out << "  pass: mocny123456\n";
     out << "  ips: []\n";
     out << "  permissions:\n";
-
     out << "  - action: api\n";
     out << "  - action: metrics\n";
     out << "  - action: pprof\n";
-
     out << "\n";
 
-
-    // ============================================================
-    // PATHS
-    // ============================================================
+    QString recordPathMTX = mainwindow->appHomePath+"/tmp/%path";
 
     out << "paths:\n";
-
-
-    const QString recordPathMTX =
-        mainwindow->appHomePath + "/tmp/%path";
-
-
-    // ============================================================
-    // KAMERY
-    // ============================================================
-
     for (int i = 0; i < model->rowCount(); ++i)
     {
-        QString name =
-            model->index(i, 1).data().toString().trimmed();
+        QString name = model->index(i, 1).data().toString();
+        QString url  = model->index(i, 2).data().toString();
 
-        QString url =
-            model->index(i, 2).data().toString().trimmed();
-
-
-        // --------------------------------------------------------
-        // Walidacja
-        // --------------------------------------------------------
-
-        if (name.isEmpty() || url.isEmpty())
-        {
-            qWarning()
-            << "Pomijam kamerę - brak nazwy lub URL:"
-            << name
-            << url;
-
-            continue;
+        // Tworzymy katalog dla KAŻDEJ kamery przed warunkami
+        QDir dir(mainwindow->appHomePath + "/tmp/" + name);
+        if(!dir.exists()){
+            dir.mkpath(mainwindow->appHomePath + "/tmp/" + name);
         }
 
-
-        // --------------------------------------------------------
-        // Nazwa ścieżki musi być bezpieczna dla YAML / RTSP
-        // --------------------------------------------------------
-
-        name.replace(" ", "_");
-
-
-        // --------------------------------------------------------
-        // Katalog nagrań
-        // --------------------------------------------------------
-
-        QDir dir(
-            mainwindow->appHomePath
-            + "/tmp/"
-            + name
-            );
-
-        if (!dir.exists())
-        {
-            if (!dir.mkpath("."))
-            {
-                qWarning()
-                << "Nie udało się utworzyć katalogu:"
-                << dir.absolutePath();
-            }
-        }
-
-
-        // ========================================================
-        // RTSP
-        //
-        // KAMERA RTSP -> BEZPOŚREDNIO MEDIAmtx
-        //
-        // Bez FFmpeg.
-        // ========================================================
-
-        if (url.startsWith("rtsp://", Qt::CaseInsensitive))
-        {
-            qDebug()
-            << "KAMERA RTSP -> BEZPOŚREDNIO MEDIAmtx:"
-            << name
-            << url;
-
+        if(url.startsWith("rtsp://", Qt::CaseInsensitive)){
+            qDebug() << "KAMERA RTSP -> SYNCHRONIZACJA CZASU:" << name;
 
             out << "  " << name << ":\n";
-
-
-            // ----------------------------------------------------
-            // Źródło
-            // ----------------------------------------------------
-
-            out << "    source: " << url << "\n";
-
-
-            // ----------------------------------------------------
-            // MediaMTX ma utrzymywać połączenie ze źródłem
-            // nawet jeśli nikt aktualnie nie ogląda.
-            // ----------------------------------------------------
-
-            out << "    sourceOnDemand: no\n";
-
-
-            // ----------------------------------------------------
-            // RTSP przez TCP
-            // ----------------------------------------------------
-
-            out << "    rtspTransport: tcp\n";
-
-
-            // ----------------------------------------------------
-            // Nagrywanie
-            // ----------------------------------------------------
-
-            out << "    record: yes\n";
-
-            out << "    recordPath: "
-                << recordPathMTX
-                << "/%Y-%m-%d_%H-%M-%S\n";
-
-            out << "    recordFormat: fmp4\n";
-
-            out << "    recordPartDuration: 100ms\n";
-
-            out << "    recordSegmentDuration: 60s\n";
-
-            out << "    recordDeleteAfter: 360s\n";
-
-
-            out << "\n";
-        }
-
-
-        // ========================================================
-        // HTTP
-        //
-        // KAMERA HTTP
-        //      ↓
-        //    FFmpeg
-        //      ↓
-        //    RTSP
-        //      ↓
-        //   MediaMTX
-        //
-        // ========================================================
-
-        else if (url.startsWith("http://", Qt::CaseInsensitive))
-        {
-            qDebug()
-            << "KAMERA HTTP -> FFmpeg -> MediaMTX:"
-            << name
-            << url;
-
-            out << "  " << name << ":\n";
-
-            // FFmpeg będzie publisherem
             out << "    source: publisher\n";
-
-            // ------------------------------------------------------------
-            // WATCHDOG
-            // ------------------------------------------------------------
-
             out << "    runOnInit: |\n";
             out << "      bash -c '\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
 
-            out << "      while true; do\n";
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
 
-            out << "        echo \"[MediaMTX] START HTTP -> RTSP: $MTX_PATH\"\n";
+            // URUCHOMIENIE FFMPEG Z JAWNYM WYŁĄCZENIEM BUFORÓW NA WEJŚCIU (PRZED -i)
+            out << "      ffmpeg -hide_banner -loglevel error -rtsp_transport tcp \\\n";
+            out << "      -fflags nobuffer+genpts -flags low_delay -async 1 \\\n"; // <-- DODAJ TĘ LINIĘ
+            out << "      -i \"" << url << "\" \\\n";
 
-            // ------------------------------------------------------------
-            // TWÓJ DZIAŁAJĄCY FFMPEG - BEZ ZMIAN
-            // ------------------------------------------------------------
+            // PROCESOWANIE ZEROLATENCY NA WYJŚCIU
+            out << "      -c:v h264 -preset ultrafast -tune zerolatency -g 25 -r 25 \\\n";
+            out << "      -c:a copy -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
 
-            out << "        ffmpeg -hide_banner -loglevel error \\\n";
-
-            out << "        -fflags +genpts+nobuffer \\\n";
-
-            out << "        -use_wallclock_as_timestamps 1 \\\n";
-
-            out << "        -i \"" << url << "\" \\\n";
-
-            out << "        -c:v copy -c:a aac -b:a 64k \\\n";
-
-            out << "        -fflags +genpts+flush_packets \\\n";
-
-            out << "        -f rtsp \\\n";
-
-            out << "        -rtsp_transport tcp \\\n";
-
-            out << "        -pkt_size 1400 \\\n";
-
-            out << "        rtsp://127.0.0.1:8554/$MTX_PATH\n";
-
-            // ------------------------------------------------------------
-            // FFMPEG ZAKOŃCZONY
-            // ------------------------------------------------------------
-
-            out << "        RET=$?\n";
-
-            out << "        echo \"[MediaMTX] HTTP FFmpeg zakończony: $MTX_PATH, kod=$RET\"\n";
-
-            out << "        echo \"[MediaMTX] Ponowne połączenie za 5 sekund...\"\n";
-
-            out << "        sleep 5\n";
-
-            out << "      done\n";
-
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
             out << "      '\n";
 
-            // ------------------------------------------------------------
-            // NAGRANIE
-            // ------------------------------------------------------------
-
             out << "    record: yes\n";
-
-            out << "    recordPath: "
-                << recordPathMTX
-                << "/%Y-%m-%d_%H-%M-%S\n";
-
+            out << "    recordPath: " + recordPathMTX + "/%Y-%m-%d_%H-%M-%S\n";
             out << "    recordFormat: fmp4\n";
-
             out << "    recordPartDuration: 100ms\n";
-
             out << "    recordSegmentDuration: 60s\n";
-
-            out << "    recordDeleteAfter: 360s\n";
-
+            out << "    recordDeleteAfter: 360s \n";
             out << "\n";
         }
+        else if (url.startsWith("http://", Qt::CaseInsensitive)) {
+            qDebug() << "KAMERA HTTP -> SYNCHRONIZACJA CZASU:" << name;
 
+            out << "  " << name << ":\n";
+            out << "    source: publisher\n";
+            out << "    runOnInit: |\n";
+            out << "      bash -c '\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
 
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
 
-        // ========================================================
-        // NIEZNANY TYP
-        // ========================================================
+            out << "      ffmpeg -hide_banner -loglevel error \\\n";
+            out << "      -fflags +genpts+nobuffer \\\n";
+            out << "      -use_wallclock_as_timestamps 1 \\\n";
+            out << "      -i \"" << url << "\" \\\n";
+            out << "      -c:v copy -c:a aac -b:a 64k -fflags +genpts+flush_packets \\\n";
+            out << "      -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
+            out << "      '\n";
 
-        else
-        {
-            qWarning()
-            << "Nieznany typ strumienia:"
-            << name
-            << url;
+            out << "    record: yes\n";
+            out << "    recordPath: " << recordPathMTX << "/%Y-%m-%d_%H-%M-%S\n";
+            out << "    recordFormat: fmp4\n";
+            out << "    recordPartDuration: 100ms\n";
+            out << "    recordSegmentDuration: 60s\n";
+            out << "    recordDeleteAfter: 360s\n";
+            out << "\n";
         }
     }
 
-
-    file.close();
-
-
-    // ============================================================
-    // KONIEC
-    // ============================================================
-
-    qDebug()
-        << "MediaMTX: konfiguracja wygenerowana:"
-        << configPath;
 }
-
-// void MediaMTXManager::generateConfig(QAbstractItemModel* model)
-// {
-//     QString configPath = installDirMtx + "/mediamtx.yml";
-//     QFile file(configPath);
-//     qDebug()<<"plik konfiguracji"<<configPath;
-//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-//         return;
-
-//     QTextStream out(&file);
-
-//     // --- GLOBAL SETTINGS ---;
-//     out << "logLevel: info\n";
-//     out << "api: yes\n";
-//     out << "apiAddress: :9997\n";
-//     out << "rtspAddress: :8554\n";
-//     //out << "protocols: [tcp,udp]\n";  "rtspTransports: [tcp, udp]\n";
-//     out << "rtspTransports: [tcp, udp]\n";
-
-//     out << "readTimeout: 30s\n";
-//     out <<  "writeTimeout: 30s\n";
-//     //out << "readBufferCount: 2048\n";  "writeQueueSize: 2048\n";
-//     out << "writeQueueSize: 2048\n";
-//     //out << "readBufferCount: 32\n";
-//     out << "\n";
-
-//     out << "authMethod: internal\n";
-//     out << "authInternalUsers:\n";
-//     out << "- user: any\n";
-//     out << "  pass: \"\"\n";
-//     out << "  ips: []\n";
-//     out << "  permissions:\n";
-//     out << "  - action: publish\n";
-//     //out << "  path:\n";
-//     out << "  - action: read\n";
-//     //out << "  path:\n";
-//     out << "  - action: playback\n";
-//     //out << "  path:\n";
-
-//     out << "- user: admin\n";
-//     out << "  pass: mocny123456\n";
-//     out << "  ips: []\n";
-//     out << "  permissions:\n";
-//     out << "  - action: api\n";
-//     out << "  - action: metrics\n";
-//     out << "  - action: pprof\n";
-//     out << "\n";
-
-//     QString recordPathMTX = mainwindow->appHomePath+"/tmp/%path";
-
-//     out << "paths:\n";
-//     for (int i = 0; i < model->rowCount(); ++i)
-//     {
-//         QString name = model->index(i, 1).data().toString();
-//         QString url  = model->index(i, 2).data().toString();
-
-//         // Tworzymy katalog dla KAŻDEJ kamery przed warunkami
-//         QDir dir(mainwindow->appHomePath + "/tmp/" + name);
-//         if(!dir.exists()){
-//             dir.mkpath(mainwindow->appHomePath + "/tmp/" + name);
-//         }
-
-//         if(url.startsWith("rtsp://", Qt::CaseInsensitive)){
-//             qDebug() << "KAMERA RTSP -> SYNCHRONIZACJA CZASU:" << name;
-
-//             out << "  " << name << ":\n";
-//             out << "    source: publisher\n";
-//             out << "    runOnInitRestart: yes\n";
-//             out << "    runOnInit: |\n";
-//             out << "      bash -c '\n";
-//             out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
-
-//             // Czekaj na sekundę :00 zegara systemowego komputera
-//             //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
-
-//             // URUCHOMIENIE FFMPEG Z JAWNYM WYŁĄCZENIEM BUFORÓW NA WEJŚCIU (PRZED -i)
-//             out << "      ffmpeg -hide_banner -loglevel error -rtsp_transport tcp \\\n";
-//             out << "      -fflags nobuffer+genpts -flags low_delay -async 1 \\\n"; // <-- DODAJ TĘ LINIĘ
-//             out << "      -i \"" << url << "\" \\\n";
-
-//             // PROCESOWANIE ZEROLATENCY NA WYJŚCIU
-//             out << "      -c:v h264 -preset ultrafast -tune zerolatency -g 25 -r 25 \\\n";
-//             out << "      -c:a copy -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
-
-//             out << "      FFMPEG_PID=$!\n";
-//             out << "      wait $FFMPEG_PID\n";
-//             out << "      '\n";
-
-//             out << "    record: yes\n";
-//             out << "    recordPath: " + recordPathMTX + "/%Y-%m-%d_%H-%M-%S\n";
-//             out << "    recordFormat: fmp4\n";
-//             out << "    recordPartDuration: 100ms\n";
-//             out << "    recordSegmentDuration: 60s\n";
-//             out << "    recordDeleteAfter: 360s \n";
-//             out << "\n";
-//         }
-//         else if (url.startsWith("http://", Qt::CaseInsensitive)) {
-//             qDebug() << "KAMERA HTTP -> SYNCHRONIZACJA CZASU:" << name;
-
-//             out << "  " << name << ":\n";
-//             out << "    source: publisher\n";
-//             out << "    runOnInitRestart: yes\n";
-//             out << "    runOnInit: |\n";
-//             out << "      bash -c '\n";
-//             out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
-
-//             // Czekaj na sekundę :00 zegara systemowego komputera
-//             //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
-
-//             out << "      ffmpeg -hide_banner -loglevel error \\\n";
-//             out << "      -fflags +genpts+nobuffer \\\n";
-//             out << "      -use_wallclock_as_timestamps 1 \\\n";
-//             out << "      -i \"" << url << "\" \\\n";
-//             out << "      -c:v copy -c:a aac -b:a 64k -fflags +genpts+flush_packets \\\n";
-//             out << "      -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
-//             out << "      FFMPEG_PID=$!\n";
-//             out << "      wait $FFMPEG_PID\n";
-//             out << "      '\n";
-
-//             out << "    record: yes\n";
-//             out << "    recordPath: " << recordPathMTX << "/%Y-%m-%d_%H-%M-%S\n";
-//             out << "    recordFormat: fmp4\n";
-//             out << "    recordPartDuration: 100ms\n";
-//             out << "    recordSegmentDuration: 60s\n";
-//             out << "    recordDeleteAfter: 360s\n";
-//             out << "\n";
-//         }
-//     }
-
-// }
