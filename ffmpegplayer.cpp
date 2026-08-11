@@ -422,6 +422,35 @@ void FfmpegPlayer::startVideoProcess()
 //     }
 // }
 
+void FfmpegPlayer::setVolume(int poziom)
+{
+    currentVolume = qBound(0, poziom, 10);
+    if (!playing || !audioEnabled) return;
+
+    // Debounce - czekamy 300ms od ostatniej zmiany zanim restartujemy audio.
+    // Bez tego przeciąganie slidera generuje dziesiątki restartów na sekundę.
+    if (!volumeDebounceTimer) {
+        volumeDebounceTimer = new QTimer(this);
+        volumeDebounceTimer->setSingleShot(true);
+        volumeDebounceTimer->setInterval(300);
+        connect(volumeDebounceTimer, &QTimer::timeout, this, [this]() {
+            if (!playing || !audioEnabled) return;
+            if (audioProcess) {
+                audioProcess->blockSignals(true);
+                if (audioProcess->state() != QProcess::NotRunning) {
+                    audioProcess->terminate();
+                    audioProcess->waitForFinished(1000);
+                }
+                audioProcess->deleteLater();
+                audioProcess = nullptr;
+            }
+            if (currentVolume > 0)
+                startAudioProcess();
+        });
+    }
+    volumeDebounceTimer->start(); // restart timera przy każdej zmianie
+}
+
 void FfmpegPlayer::startAudioProcess()
 {
     audioProcess = new QProcess(this);
@@ -433,24 +462,29 @@ void FfmpegPlayer::startAudioProcess()
                          << audioProcess->readAllStandardError();
             });
 
+    // Slider 0-10 → filtr volume FFmpeg 0.0-2.0
+    // poziom 5 = 1.0 (normalna głośność), 10 = 2.0 (podwójna)
+    QString vol = QString::number(currentVolume / 5.0, 'f', 2);
+
     audioProcess->start(FFMPEG_BIN, {
-                                        "-fflags", "nobuffer",
-                                        "-rtsp_transport", "tcp",
-                                        "-i", rtspUrl,
-                                        "-vn",
-                                        "-acodec", "pcm_s16le",
-                                        "-ar", "44100",
-                                        "-ac", "2",
-                                        "-f", "pulse",
-                                        "default"
-                                    });
+        "-fflags", "nobuffer",
+        "-rtsp_transport", "tcp",
+        "-i", rtspUrl,
+        "-vn",
+        "-af", QString("volume=%1").arg(vol),
+        "-acodec", "pcm_s16le",
+        "-ar", "44100",
+        "-ac", "2",
+        "-f", "pulse",
+        "default"
+    });
 
     if (!audioProcess->waitForStarted(3000)) {
         qWarning() << "Nie udało się uruchomić audio";
         return;
     }
 
-    qDebug() << "PID audio:" << audioProcess->processId();
+    qDebug() << "PID audio:" << audioProcess->processId() << "volume:" << vol;
 }
 
 void FfmpegPlayer::stopAll()

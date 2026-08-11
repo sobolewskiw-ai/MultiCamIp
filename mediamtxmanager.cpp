@@ -254,7 +254,7 @@ QString MediaMTXManager::czytajMtxVersion()
 
 void MediaMTXManager::startMtx()
 {
-    mainwindow->czytajKameryDat("http://localhost:8080/kamery.dat");
+    if(mainwindow->czytajKameryDat("http://localhost:8080/kamery.dat")){
     generateConfig(mainwindow->ItemModel);
 
     if(process && process->state() == QProcess::Running) {
@@ -275,6 +275,9 @@ void MediaMTXManager::startMtx()
         qWarning() << "Błąd: MediaMTX nie uruchomiony!";
     else
         qDebug() << "MediaMTX uruchamiam.";
+    }else{
+        QMessageBox::information(nullptr,"INFO","SERWER HTTP NIE DZIAŁA");
+    }
 }
 
 void MediaMTXManager::stopMtx()
@@ -426,64 +429,83 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     out << "  - action: pprof\n";
     out << "\n";
 
-    QString recordPathMTX = mainwindow->appHomePath+"/tmp/%path";//QDir::homePath()+"/CameraDir/tmp/%path";
+    QString recordPathMTX = mainwindow->appHomePath+"/tmp/%path";
 
     out << "paths:\n";
     for (int i = 0; i < model->rowCount(); ++i)
     {
         QString name = model->index(i, 1).data().toString();
         QString url  = model->index(i, 2).data().toString();
-        QDir dir(mainwindow->appHomePath+"/tmp/"+name);
+
+        // Tworzymy katalog dla KAŻDEJ kamery przed warunkami
+        QDir dir(mainwindow->appHomePath + "/tmp/" + name);
         if(!dir.exists()){
-            dir.mkpath(mainwindow->appHomePath+"/tmp/"+name);
+            dir.mkpath(mainwindow->appHomePath + "/tmp/" + name);
         }
 
-        qDebug()<< name<< url;
-        out << "  " << name << ":\n";
-        out << "    source: " << url << "\n";
-        //out << "    sourceProtocol: tcp\n";  "rtspTransport: tcp\n";
-        out << "    rtspTransport: tcp\n";
-        out << "    sourceOnDemand: no\n";
-        out << "    sourceOnDemandCloseAfter: 10s\n";
-        //stara część
-        out << "    record: yes\n";
-        out << "    recordPath: "+recordPathMTX+"/%Y-%m-%d_%H-%M-%S\n";
-        out << "    recordFormat: fmp4\n";
-        out << "    recordPartDuration: 1s\n";
-        out << "    recordSegmentDuration: 60s\n";
-        //out << "    recordSegmentAlignClock: yes\n";
-        out << "    recordDeleteAfter: 360s \n";
-        out << "\n";
+        if(url.startsWith("rtsp://", Qt::CaseInsensitive)){
+            qDebug() << "KAMERA RTSP -> SYNCHRONIZACJA CZASU:" << name;
 
-        //nowa część
-        // out << "    runOnReady: |-\n";
-        // out << "       bash -c '\n";
-        // out << "       # trap SIGTERM – zakończy ffmpeg przy zamknięciu MediaMTX\n";
-        // out << "       trap \"echo SIGTERM received, killing ffmpeg; kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
-        // out << "       # czekamy aż stream będzie gotowy\n";
-        // out << "       until ffprobe -v error rtsp://127.0.0.1:8554/$MTX_PATH > /dev/null 2>&1; do\n";
-        // out << "       echo \"$MTX_PATH: czekam na stream...\"\n";
-        // out << "       sleep 2\n";
-        // out << "       done\n";
-        // out << "       echo \"$MTX_PATH: stream gotowy, start ffmpeg\"\n";
-        // out << "       ffmpeg -loglevel error -rtsp_transport tcp \\\n";
-        // out << "       -i rtsp://127.0.0.1:8554/$MTX_PATH \\\n";
-        // out << "       -c:v copy -c:a aac -b:a 64k \\\n";
-        // out << "       -f segment \\\n";
-        // out << "       -segment_time 60 \\\n";
-        // out << "       -segment_atclocktime 1 \\\n";
-        // out << "       -reset_timestamps 1 \\\n";
-        // out << "       -strftime 1 \\\n";
-        // out << "       "+QDir::homePath()+"/CameraDir/tmp/$MTX_PATH/%Y-%m-%d_%H-%M-%S.ts &\n";
-        // out << "       FFMPEG_PID=$!\n";
-        // out << "       wait $FFMPEG_PID\n";
-        // out << "       echo \"%path: ffmpeg zakończony\"\n";
-        // out << "       '\n";
+            out << "  " << name << ":\n";
+            out << "    source: publisher\n";
+            out << "    runOnInit: |\n";
+            out << "      bash -c '\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
+
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
+
+            // URUCHOMIENIE FFMPEG Z JAWNYM WYŁĄCZENIEM BUFORÓW NA WEJŚCIU (PRZED -i)
+            out << "      ffmpeg -hide_banner -loglevel error -rtsp_transport tcp \\\n";
+            out << "      -fflags nobuffer+genpts -flags low_delay -async 1 \\\n"; // <-- DODAJ TĘ LINIĘ
+            out << "      -i \"" << url << "\" \\\n";
+
+            // PROCESOWANIE ZEROLATENCY NA WYJŚCIU
+            out << "      -c:v h264 -preset ultrafast -tune zerolatency -g 25 -r 25 \\\n";
+            out << "      -c:a copy -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
+
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
+            out << "      '\n";
+
+            out << "    record: yes\n";
+            out << "    recordPath: " + recordPathMTX + "/%Y-%m-%d_%H-%M-%S\n";
+            out << "    recordFormat: fmp4\n";
+            out << "    recordPartDuration: 100ms\n";
+            out << "    recordSegmentDuration: 60s\n";
+            out << "    recordDeleteAfter: 360s \n";
+            out << "\n";
+        }
+        else if (url.startsWith("http://", Qt::CaseInsensitive)) {
+            qDebug() << "KAMERA HTTP -> SYNCHRONIZACJA CZASU:" << name;
+
+            out << "  " << name << ":\n";
+            out << "    source: publisher\n";
+            out << "    runOnInit: |\n";
+            out << "      bash -c '\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
+
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
+
+            out << "      ffmpeg -hide_banner -loglevel error \\\n";
+            out << "      -fflags +genpts+nobuffer \\\n";
+            out << "      -use_wallclock_as_timestamps 1 \\\n";
+            out << "      -i \"" << url << "\" \\\n";
+            out << "      -c:v copy -c:a aac -b:a 64k -fflags +genpts+flush_packets \\\n";
+            out << "      -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
+            out << "      '\n";
+
+            out << "    record: yes\n";
+            out << "    recordPath: " << recordPathMTX << "/%Y-%m-%d_%H-%M-%S\n";
+            out << "    recordFormat: fmp4\n";
+            out << "    recordPartDuration: 100ms\n";
+            out << "    recordSegmentDuration: 60s\n";
+            out << "    recordDeleteAfter: 360s\n";
+            out << "\n";
+        }
     }
-    //dostęp do archiwum
-    // out << "  ~^archive/.+/.+$:\n";
-    // out << "     runOnDemand: /home/sobolewski/mediamtx/archive.sh\n";
-    // out << "     runOnDemandCloseAfter: 5s\n";
 
-    file.close();
 }

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QHttpServerResponse>
 
 class QHttpServer;
 class QTcpServer;
@@ -36,6 +37,11 @@ public:
 
     bool isRunning() const;
     quint16 serverPort() const;
+
+    QHttpServerResponse odczytajPlikDat(const QString &nazwaPliku);
+    QHttpServerResponse zapiszPlikDat(
+        const QString &nazwaPliku,
+        const QByteArray &data);
 
 signals:
     void serverStarted(quint16 port);

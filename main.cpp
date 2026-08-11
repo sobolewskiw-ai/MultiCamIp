@@ -9,6 +9,27 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    a.setStyleSheet(R"(
+    QMenu {
+        background: #2b2b2b;
+        color: white;
+        border: 1px solid #555;
+    }
+    QMenu::item {
+        background: #9ACFF0;
+        color: #000000;
+        padding: 6px 25px;
+    }
+    QMenu::item:selected {
+        background: #3d7eff;
+        color: white;
+    }
+    QMenu::item:disabled {
+        background: #9ACFF0;
+        color: #777;
+    }
+    )");
+
     QTranslator translator;
 
     if (translator.load(

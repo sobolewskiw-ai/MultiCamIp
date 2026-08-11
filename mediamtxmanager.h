@@ -21,6 +21,7 @@ public:
     void pobieramMtxmanager(const QString &url, const QString &zapisz);
     void generateConfig(QAbstractItemModel* model);
     void stopMtx();
+    void startMtx();
 
 signals:
     void urlMtxGotowe(const QVector<QString> &wynik);
@@ -31,7 +32,7 @@ private:
     bool rozpakuj(const QString &archiwum,const QString &katalog);
     void zapiszMtxVersion();
     QString czytajMtxVersion();
-    void startMtx();
+//    void startMtx();
     MainWindow *mainwindow = nullptr;
     QString installDirMtx;
     QString binaryPath;

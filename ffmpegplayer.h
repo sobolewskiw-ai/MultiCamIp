@@ -58,6 +58,9 @@ public:
     void setLabel(QLabel *label);
     void setUrl(const QString &url);
     void setAudioEnabled(bool enabled);
+    bool isAudioEnabled() const { return audioEnabled; }
+    // poziom: 0-10 (0=cisza, 5=normalna, 10=podwójna głośność)
+    void setVolume(int poziom);
     bool isPlaying() const;
     void setAspectRatioMode(Qt::AspectRatioMode mode);
 
@@ -94,11 +97,13 @@ private:
     QString  rtspUrl;
     QString  pipePath;
     bool     audioEnabled  = false;
+    int      currentVolume = 5;    // 0-10, domyślnie normalna głośność (1.0x)
     QSize    frameSize;
     std::atomic<bool> playing{false};
 
     // Reconnect
-    QTimer  *reconnectTimer  = nullptr;   // tyka co 1s
+    QTimer  *reconnectTimer      = nullptr;   // tyka co 1s
+    QTimer  *volumeDebounceTimer = nullptr;   // opóźnia restart audio przy szybkich zmianach slidera
     int      reconnectCountdown = 0;      // sekundy do następnej próby
     int      reconnectAttempt   = 0;      // numer próby (do logowania)
     static constexpr int RECONNECT_INTERVAL = 10; // sekund między próbami

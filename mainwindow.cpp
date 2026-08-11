@@ -22,6 +22,10 @@
 #include <QHostInfo>
 #include <QTcpSocket>
 #include <QActionGroup>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QFileDialog>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -34,13 +38,32 @@ MainWindow::MainWindow(QWidget *parent)
     appHomePath = QDir::homePath()+"/AppMultiCam";
     mtx = new MediaMTXManager(this);
     connect(mtx, &MediaMTXManager::urlMtxGotowe,this,
-            [this]( const QVector<QString> &wynik)
-            {
-                qDebug() << "Wersja :" << wynik[0];
-                qDebug() << "Plik    :" << wynik[1];
-                qDebug() << "URL     :" << wynik[2];
-                mtx->pobieramMtxmanager(wynik[2],appHomePath+"/mediamtx/"+wynik[1]);
-            });
+        [this]( const QVector<QString> &wynik){
+        qDebug() << "Wersja :" << wynik[0];
+        qDebug() << "Plik    :" << wynik[1];
+        qDebug() << "URL     :" << wynik[2];
+        mtx->pobieramMtxmanager(wynik[2],appHomePath+"/mediamtx/"+wynik[1]);
+    });
+    QString kameradata = appHomePath+"/kamery.dat";
+    fileWatcher.addPath(kameradata);
+    qDebug()<< fileWatcher.files();
+    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this,
+        [this,kameradata](){
+        qDebug()<< fileWatcher.files();
+        mtx->stopMtx();
+        menuListPodglad->clear();
+        widgetVectr.clear();
+        widgetLayutVector.clear();
+        itemVector.clear();
+        liczba = 0;
+        for(int x =0; x < playerVector.size(); x++){
+            playerVector[x]->stop();
+        }
+        mtx->startMtx();
+        if (!fileWatcher.files().contains(kameradata))
+            fileWatcher.addPath(kameradata);
+    });
+
 
     stylesheetPushButton =
         "QPushButton {"
@@ -125,6 +148,59 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
         "QSlider::handle:horizontal:pressed {background: #005A9E;"
         "}";
+    stylesheetComboBox = R"(
+QComboBox {
+    background-color: white;
+    color: #003366;
+    border: 2px solid #3399FF;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 18px;
+    selection-background-color: #BDE8FF;
+}
+
+QComboBox::drop-down {
+    width: 42px;
+    border: none;
+    border-left: 1px solid #99CCEE;
+    background-color: #DFF2FF;
+}
+
+QComboBox::down-arrow {
+    image: none;
+    width: 0px;
+    height: 0px;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 8px solid #0078D7;
+}
+)";
+    stylesheetTable = R"(
+QTableWidget {
+    background-color: white;
+    alternate-background-color: #F5F5F5;
+    color: black;
+    font-size: 18px;
+    gridline-color: #C8D6E5;
+    border: 1px solid #C8D6E5;
+}
+
+QTableWidget::item {
+    background: white;
+    color: black;
+    padding: 4px;
+}
+
+QTableWidget::item:selected {
+    background: #4A90E2;
+    color: white;
+}
+
+QTableCornerButton::section {
+    background: #BDE8FF;
+    border: 1px solid #8EC7E8;
+}
+)";
 
     setupUi();
 }
@@ -779,10 +855,18 @@ void MainWindow::setupUi()
         });
         connect(btnRozlacz, &QPushButton::clicked, dialog, [this](){
             menuListPodglad->clear();
+    qDebug()<< "test 1";
             widgetVectr.clear();
             widgetLayutVector.clear();
             itemVector.clear();
+    qDebug()<< "test 2";
+            audioEnabledVector.fill(false);
+    qDebug()<< "test 3";
             liczba = 0;
+            for(int x =0; x < playerVector.size(); x++){
+                playerVector[x]->stop();
+    qDebug()<< "test 4" << x;
+            }
         });
         connect(btnAnuluj,&QPushButton::clicked, dialog,&QDialog::close);
 
@@ -1164,19 +1248,14 @@ void MainWindow::tworzeWidgetNagrania(int ileKamer)
 
             sliderVector[x]->blockSignals(true);
             sliderVector[x]->setValue(wlacz ? 6 : 0);
-            btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-medium.svg"));
+        //    btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-medium.svg"));
             sliderVector[x]->blockSignals(false);
-            // audioEnabledVector[x] = !audioEnabledVector[x];
-            // playerVector[x]->setAudioEnabled(audioEnabledVector[x]);
-            // sliderVector[x]->blockSignals(true);
-            // sliderVector[x]->setValue(audioEnabledVector[x] ? 6 : 0);
-            // sliderVector[x]->blockSignals(false);
-
-            // playerVector[x]->setAudioEnabled(true);
-            // sliderVector[x]->blockSignals(true);
-            // sliderVector[x]->setValue(0);
-            // sliderVector[x]->blockSignals(false);
-            // sliderVector[x]->setValue(6);
+            btnAudioOnVector[x]->setIcon(QIcon(
+                wlacz ? ":/icons/speaker-medium.svg"
+                      : ":/icons/speaker-muted.svg"));
+            // Ustawiamy głośność na wartość slidera (6) gdy włączamy audio
+            if (wlacz && playerVector[x])
+                playerVector[x]->setVolume(6);
         });
 
         sliderVector.append(nullptr);
@@ -1187,23 +1266,38 @@ void MainWindow::tworzeWidgetNagrania(int ileKamer)
         sliderVector[x]->setRange(0, 10);
         sliderVector[x]->setValue(0);
         connect(sliderVector[x], &QSlider::valueChanged, kameraWidgetVector[x],[this,x](){
-            if(sliderVector[x]->value() == 0)
+            int val = sliderVector[x]->value();
+
+            // Aktualizuj ikonę
+            if(val == 0)
                 btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-muted.svg"));
-            else if(sliderVector[x]->value() > 0 && sliderVector[x]->value() <= 3)
+            else if(val <= 3)
                 btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-low.svg"));
-            else if(sliderVector[x]->value() > 3 && sliderVector[x]->value() <= 7)
+            else if(val <= 7)
                 btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-medium.svg"));
-            else if(sliderVector[x]->value() > 7 && sliderVector[x]->value() <= 10)
+            else
                 btnAudioOnVector[x]->setIcon(QIcon(":/icons/speaker-high.svg"));
-            for(int i = 0; i < sliderVector.count(); i++)
-            {
-                if(i != x ){
+
+            // Reguluj głośność playera
+            if(x < playerVector.count() && playerVector[x]) {
+                if(val == 0) {
+                    playerVector[x]->setAudioEnabled(false);
+                } else {
+                    if(!playerVector[x]->isAudioEnabled())
+                        playerVector[x]->setAudioEnabled(true);
+                    playerVector[x]->setVolume(val);
+                }
+            }
+
+            // Wycisz pozostałe kamery
+            for(int i = 0; i < sliderVector.count(); i++) {
+                if(i != x) {
                     sliderVector[i]->blockSignals(true);
                     sliderVector[i]->setValue(0);
                     sliderVector[i]->blockSignals(false);
                     btnAudioOnVector[i]->setIcon(QIcon(":/icons/speaker-muted.svg"));
-                    if(i<playerVector.count())
-                    playerVector[i]->setAudioEnabled(false);
+                    if(i < playerVector.count() && playerVector[i])
+                        playerVector[i]->setAudioEnabled(false);
                 }
             }
         });
@@ -1379,7 +1473,7 @@ void MainWindow::createWidgetListaLivekamery()
         item->setFont(font2);
         item->setSizeHint(widget->sizeHint());
 
-        czytajKameryDat("http://"+adres+":8080/kamery.dat");
+    if(czytajKameryDat("http://"+adres+":8080/kamery.dat")){
         qDebug()<<"http://"+adres+":8080/kamery.dat";
         for(int row = 0; row < ItemModel->rowCount(); row++){
             QString kameraName = ItemModel->item(row,1)
@@ -1475,10 +1569,14 @@ void MainWindow::createWidgetListaLivekamery()
         menuListPodglad->setItemWidget(item,widget);
 
 //tutaj    }
-    for (int i = 0; i < widgetVectr.size(); ++i)
-    {
-        itemVector[i]->setSizeHint(widgetVectr[i]->sizeHint());
+        for (int i = 0; i < widgetVectr.size(); ++i)
+            {
+                itemVector[i]->setSizeHint(widgetVectr[i]->sizeHint());
+            }
+    }else{
+        QMessageBox::information(this,"INFO","ERROR CAM");
     }
+    tworzeWidgetNagrania(liczba);
 }
 
 void MainWindow::createWidgetUstawienia()
@@ -1492,13 +1590,18 @@ void MainWindow::createWidgetUstawienia()
     widget->setWindowTitle("USTAWIENIA");
     widget->setGeometry(0,0,this->width(),this->height());
     QVBoxLayout *widgetLayout = new QVBoxLayout(widget);
-    QLabel *labelTitle = new QLabel("DODAJ USUŃ MODYFIKUJ",widget);
+//    QLabel *labelTitle = new QLabel("NA SERWERZE "+adreshttp+"\nKAMERY:\nDODAJ USUŃ MODYFIKUJ",widget);
+    QString tekst = QString(
+                        "<div style='font-size: 24px;'>SERWER %1</div>"
+                        "<div style='font-size: 18px;'>KAMERY:<br>DODAJ USUŃ MODYFIKUJ</div>"
+                        ).arg(adreshttp);
+    QLabel *labelTitle = new QLabel(tekst, widget);
     labelTitle->setAlignment(Qt::AlignCenter);
     labelTitle->setStyleSheet(stylesheetLabelSelectedBlue);
     QTableWidget *table = new QTableWidget(0,9,widget);
     table->verticalHeader()->setVisible(false);
     table->setHorizontalHeaderLabels(
-        {"Lp.", "Kamera", "Adres","3","4","Zapis nagrań do","Ile dni","Czułość","Detekcja"}
+        {"Id.", "Kamera", "Adres","Rozdzielczość","fps/s","Zapis nagrań do","Ile dni","Czułość","Detekcja"}
         );
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1518,17 +1621,17 @@ void MainWindow::createWidgetUstawienia()
         "padding:6px;"
         "}"
         );
-    header->setSectionResizeMode(0,QHeaderView::Fixed);
-    header->setSectionResizeMode(1,QHeaderView::Fixed);
+    header->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(1,QHeaderView::ResizeToContents);
     header->setSectionResizeMode(2,QHeaderView::Stretch);
-    header->setSectionResizeMode(3,QHeaderView::Fixed);
-    header->setSectionResizeMode(4,QHeaderView::Fixed);
+    header->setSectionResizeMode(3,QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(4,QHeaderView::ResizeToContents);
     header->setSectionResizeMode(5,QHeaderView::Stretch);
-    header->setSectionResizeMode(6,QHeaderView::Fixed);
-    header->setSectionResizeMode(7,QHeaderView::Fixed);
-    header->setSectionResizeMode(8,QHeaderView::Fixed);
-    table->hideColumn(3);
-    table->hideColumn(4);
+    header->setSectionResizeMode(6,QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(7,QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(8,QHeaderView::ResizeToContents);
+//    table->hideColumn(3);
+//    table->hideColumn(4);
 
     for(int row = 0; row < ItemModel->rowCount(); row++){
         table->insertRow(row);
@@ -1541,55 +1644,367 @@ void MainWindow::createWidgetUstawienia()
             table->setItem(row,col, item);
         }
     }
-    table->setStyleSheet(R"(
-QTableWidget {
-    background-color: white;
-    alternate-background-color: #F5F5F5;
-    color: black;
-    font-size: 18px;
-    gridline-color: #C8D6E5;
-    border: 1px solid #C8D6E5;
-}
-
-QTableWidget::item {
-    background: white;
-    color: black;
-    padding: 4px;
-}
-
-QTableWidget::item:selected {
-    background: #4A90E2;
-    color: white;
-}
-
-QTableCornerButton::section {
-    background: #BDE8FF;
-    border: 1px solid #8EC7E8;
-}
-)");
-    // QTimer::singleShot(0, table, [table]()
-    //     {
-    //         table->selectRow(0);
-    //         table->setFocus();
-    //     });
+    table->setStyleSheet(stylesheetTable);
 
     QHBoxLayout *layouth1 = new QHBoxLayout();
+    QPushButton *btnZapisz = new QPushButton("ZAPISZ",widget);
+    btnZapisz->setStyleSheet(stylesheetPushButton);
     QPushButton *btnDodaj = new QPushButton("DODAJ",widget);
     btnDodaj->setStyleSheet(stylesheetPushButton);
+    QPushButton *btnModyfikuj = new QPushButton("POKAŻ - MODYFIKUJ",widget);
+    btnModyfikuj->setStyleSheet(stylesheetPushButton);
+    QPushButton *strefyRuchu = new QPushButton("STREFY RUCHU",widget);
+    strefyRuchu->setStyleSheet(stylesheetPushButton);
+    QPushButton *btnUsun = new QPushButton("USUŃ",widget);
+    btnUsun->setStyleSheet(stylesheetPushButton);
     QPushButton *btnAnuluj = new QPushButton("ANULUJ",widget);
     btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
+    layouth1->addWidget(btnZapisz,1);
     layouth1->addWidget(btnDodaj,1);
+    layouth1->addWidget(btnModyfikuj,1);
+    layouth1->addWidget(strefyRuchu,1);
+    layouth1->addWidget(btnUsun,1);
     layouth1->addStretch(1);
     layouth1->addWidget(btnAnuluj,1);
     widgetLayout->addWidget(labelTitle);
     widgetLayout->addWidget(table);
     widgetLayout->addLayout(layouth1);
+
+    QString labelStyleSheet = R"(QLabel{
+        border: 2px solid #0078D7;
+        background-color: #BDE8FF;
+        color: black;
+        font-size: 30px;
+        }
+    )";
+    QString labelBorderStyleSheet = R"(QLabel{
+        border: 2px solid #0078D7;
+        color: black;
+        font-size: 30px;
+    })";
+    QString lineEditStyleSheet  = R"(QLineEdit{
+        border: 2px solid #0078D7;
+        color: black;
+        font-size: 30px;
+    })";
+    QString spinBoxStyleSheet = R"(
+        QSpinBox{
+        border: 2px solid #0078D7;
+        color: black;
+        font-size: 30px;
+    }
+        QSpinBox:focus {
+        color: black;
+        background-color: white;
+        selection-background-color: white;
+        selection-color: black;
+    }
+    )";
+    QString comboBoxStyleSheet = R"(
+        QComboBox{
+        border: 2px solid #0078D7;
+        color: black;
+        font-size: 30px;
+        selection-background-color: #BDE8FF;
+    }
+    )";
+//widgetDodajKam
+    QWidget *widgetDodajKam = new QWidget();
+    widgetDodajKam->setStyleSheet("background-color: white;");
+    widgetDodajKam->setAttribute(Qt::WA_DeleteOnClose);
+    widgetDodajKam->setWindowTitle("USTAWIENIA KAMERY");
+    widgetDodajKam->setGeometry(0,0,this->width(),this->height());
+    QVBoxLayout *dodajKamLayout = new QVBoxLayout(widgetDodajKam);
+    QLabel *labelDodajKam = new QLabel("KAMERY:\nDODAJ",widgetDodajKam);
+    labelDodajKam->setAlignment(Qt::AlignCenter);
+    labelDodajKam->setStyleSheet(stylesheetLabelSelectedBlue);
+    dodajKamLayout->addWidget(labelDodajKam);
+
+    QHBoxLayout *layoutDK0 = new QHBoxLayout();
+    QLabel *labelDK01 = new QLabel("Id",widgetDodajKam);
+    labelDK01->setAlignment(Qt::AlignCenter);
+    labelDK01->setStyleSheet(labelStyleSheet);
+    QLabel *labelDK02 = new QLabel(QString::number(table->rowCount()),widgetDodajKam);
+    labelDK02->setAlignment(Qt::AlignCenter);
+    labelDK02->setStyleSheet(labelBorderStyleSheet);
+    layoutDK0->addWidget(labelDK01);
+    layoutDK0->addWidget(labelDK02);
+    layoutDK0->addStretch(0);
+
+    QHBoxLayout *layoutDK1 = new QHBoxLayout();
+    QLabel *labelDkNazwa = new QLabel("KAMERA:",widgetDodajKam);
+    labelDkNazwa->setAlignment(Qt::AlignCenter);
+    labelDkNazwa->setStyleSheet(labelStyleSheet);
+    QLineEdit *lineEditNazwa = new QLineEdit("",widgetDodajKam);
+    lineEditNazwa->setAlignment(Qt::AlignCenter);
+    lineEditNazwa->setStyleSheet(lineEditStyleSheet);
+    layoutDK1->addWidget(labelDkNazwa);
+    layoutDK1->addWidget(lineEditNazwa);
+
+    QHBoxLayout *layoutDK2 = new QHBoxLayout();
+    QLabel *labelDkAdres = new QLabel("ADRES STRUMIENIA:",widgetDodajKam);
+    labelDkAdres->setAlignment(Qt::AlignCenter);
+    labelDkAdres->setStyleSheet(labelStyleSheet);
+    QLineEdit *lineEditAdres = new QLineEdit("",widgetDodajKam);
+    lineEditAdres->setAlignment(Qt::AlignCenter);
+    lineEditAdres->setStyleSheet(lineEditStyleSheet);
+    layoutDK2->addWidget(labelDkAdres);
+    layoutDK2->addWidget(lineEditAdres);
+
+    QHBoxLayout *layoutDK3 = new QHBoxLayout();
+    QLabel *labelDkRozdz1 = new QLabel("ROZDZIELCZOŚĆ KAMERY:",widgetDodajKam);
+    labelDkRozdz1->setAlignment(Qt::AlignCenter);
+    labelDkRozdz1->setStyleSheet(labelStyleSheet);
+    QLabel *labelDkRozdz2 =new QLabel(widgetDodajKam);
+    labelDkRozdz2->setAlignment(Qt::AlignCenter);
+    labelDkRozdz2->setStyleSheet(labelBorderStyleSheet);
+    layoutDK3->addWidget(labelDkRozdz1);
+    layoutDK3->addWidget(labelDkRozdz2);
+    layoutDK3->addStretch(0);
+
+    QHBoxLayout *layoutDK4 = new QHBoxLayout();
+    QLabel *labelFps1 = new QLabel("fps/s", widgetDodajKam);
+    labelFps1->setAlignment(Qt::AlignCenter);
+    labelFps1->setStyleSheet(labelStyleSheet);
+    QLabel *labelFps2 = new QLabel(widgetDodajKam);
+    labelFps2->setAlignment(Qt::AlignCenter);
+    labelFps2->setStyleSheet(labelBorderStyleSheet);
+    layoutDK4->addWidget(labelFps1);
+    layoutDK4->addWidget(labelFps2);
+    layoutDK4->addStretch(0);
+
+    QHBoxLayout *layoutDK5 = new QHBoxLayout();
+    QLabel *labelDkPath = new QLabel("ZAPIS NAGRAŃ DO:",widgetDodajKam);
+    labelDkPath->setAlignment(Qt::AlignCenter);
+    labelDkPath->setStyleSheet(labelStyleSheet);
+    QString path = QDir::homePath()+"/AppMultiCam/nagrania/";
+    QLineEdit *lineEditPath = new QLineEdit(path,widgetDodajKam);
+    lineEditPath->setReadOnly(true);
+    lineEditPath->setAlignment(Qt::AlignCenter);
+    connect(lineEditNazwa, &QLineEdit::textChanged,widgetDodajKam,
+                                [path,lineEditPath,lineEditNazwa](){
+        lineEditPath->setText(path+lineEditNazwa->text().toLower().trimmed().remove(' ')+"/");
+    });
+
+    QPushButton *btnPath = new QPushButton("▼",widgetDodajKam);
+    btnPath->setFixedSize(40,40);
+    btnPath->setStyleSheet(stylesheetPushButton);
+    connect(btnPath, &QPushButton::clicked, this, [lineEditPath,lineEditNazwa]() {
+        if(lineEditNazwa->text().trimmed().isEmpty()){
+            QMessageBox::information(nullptr,"UWAGA","WYPEŁNIJ NAJPIERW NAZWĘ KAMERY");
+            lineEditNazwa->setFocus();
+            return;
+        }
+        QString sciezka = QFileDialog::getExistingDirectory(
+            nullptr,
+            "Wybierz katalog",
+            QDir::homePath()
+            );
+        if (!sciezka.isEmpty())
+            lineEditPath->setText(sciezka+"/"+lineEditNazwa->text().toLower().trimmed().remove(' ')+"/");
+    });
+    lineEditPath->setStyleSheet(lineEditStyleSheet);
+    layoutDK5->addWidget(labelDkPath);
+    layoutDK5->addWidget(lineEditPath);
+    layoutDK5->addWidget(btnPath);
+
+    QHBoxLayout *layoutDK6 = new QHBoxLayout();
+    QLabel *labelDkIleDni = new QLabel("ILE DNI PRZECHOWYWAĆ:",widgetDodajKam);
+    labelDkIleDni->setAlignment(Qt::AlignCenter);
+    labelDkIleDni->setStyleSheet(labelStyleSheet);
+    QSpinBox *spinBoxIleDni = new QSpinBox(widgetDodajKam);
+    spinBoxIleDni->setValue(10);
+    spinBoxIleDni->setAlignment(Qt::AlignCenter);
+    spinBoxIleDni->setStyleSheet(spinBoxStyleSheet);
+    layoutDK6->addWidget(labelDkIleDni);
+    layoutDK6->addWidget(spinBoxIleDni);
+    layoutDK6->addStretch(0);
+
+    QHBoxLayout *layoutDK7 = new QHBoxLayout();
+    QLabel *labelDkCzulosc = new QLabel("CZUŁOŚĆ DETEKCJI:",widgetDodajKam);
+    labelDkCzulosc->setAlignment(Qt::AlignCenter);
+    labelDkCzulosc->setStyleSheet(labelStyleSheet);
+    QSpinBox *spinBoxCzulosc = new QSpinBox(widgetDodajKam);
+    spinBoxCzulosc->setMinimum(1000);
+    spinBoxCzulosc->setMaximum(100000);
+    spinBoxCzulosc->setValue(10000);
+    spinBoxCzulosc->setAlignment(Qt::AlignCenter);
+    spinBoxCzulosc->setStyleSheet(spinBoxStyleSheet);
+    spinBoxCzulosc->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    layoutDK7->addWidget(labelDkCzulosc);
+    layoutDK7->addWidget(spinBoxCzulosc);
+    layoutDK7->addStretch(0);
+
+    QHBoxLayout *layoutDK8 = new QHBoxLayout();
+    QLabel *labelDkDetekcja = new QLabel("DETEKCJA RUCHU:",widgetDodajKam);
+    labelDkDetekcja->setAlignment(Qt::AlignCenter);
+    labelDkDetekcja->setStyleSheet(labelStyleSheet);
+    QComboBox *comboBoxDetekcja = new QComboBox(widgetDodajKam);
+    comboBoxDetekcja->setStyleSheet(comboBoxStyleSheet);
+    comboBoxDetekcja->setFixedWidth(150);
+    comboBoxDetekcja->addItem("TAK",true);
+    comboBoxDetekcja->addItem("NIE",false);
+    for (int i = 0; i < comboBoxDetekcja->count(); ++i)
+        comboBoxDetekcja->setItemData(
+            i,
+            Qt::AlignCenter,
+            Qt::TextAlignmentRole
+            );
+    layoutDK8->addWidget(labelDkDetekcja);
+    layoutDK8->addWidget(comboBoxDetekcja);
+    layoutDK8->addStretch(0);
+
+    int szerokosc = 150;
+    QHBoxLayout *layoutBtn = new QHBoxLayout();
+    // QPushButton *btnZapisz = new QPushButton("ZAPISZ",widgetDodajKam);
+    // btnZapisz->setStyleSheet(stylesheetPushButton);
+    // btnZapisz->setFixedWidth(szerokosc);
+    QPushButton *btnTest = new QPushButton("TEST",widgetDodajKam);
+    btnTest->setStyleSheet(stylesheetPushButton);
+    btnTest->setFixedWidth(szerokosc);
+    // QPushButton *btnStrefyRuchu = new QPushButton("STREFY RUCHU",widgetDodajKam);
+    // btnStrefyRuchu->setStyleSheet(stylesheetPushButton);
+    // btnStrefyRuchu->setFixedWidth(szerokosc);
+    QPushButton *btnCancel = new QPushButton("ANULUJ",widgetDodajKam);
+    btnCancel->setStyleSheet(stylesheetPushButtonRed);
+    btnCancel->setFixedWidth(szerokosc);
+//    layoutBtn->addWidget(btnZapisz);
+    layoutBtn->addWidget(btnTest);
+//    layoutBtn->addWidget(btnStrefyRuchu);
+    layoutBtn->addStretch(0);
+    layoutBtn->addWidget(btnCancel);
+
+
+    dodajKamLayout->addLayout(layoutDK0);
+    dodajKamLayout->addLayout(layoutDK1);
+    dodajKamLayout->addLayout(layoutDK2);
+    dodajKamLayout->addLayout(layoutDK3);
+    dodajKamLayout->addLayout(layoutDK4);
+    dodajKamLayout->addLayout(layoutDK5);
+    dodajKamLayout->addLayout(layoutDK6);
+    dodajKamLayout->addLayout(layoutDK7);
+    dodajKamLayout->addLayout(layoutDK8);
+    dodajKamLayout->addStretch(0);
+    dodajKamLayout->addLayout(layoutBtn);
+
+    QList<QLabel*> labelList;
+    int w = 400;
+    labelList = {labelDK01,labelDkNazwa,labelDkAdres,labelDkRozdz1,labelFps1,labelDkPath,labelDkIleDni,
+                 labelDkCzulosc,labelDkDetekcja};
+    for(auto lab: std::as_const(labelList)){
+        lab->setFixedWidth(w);
+    }
+    w = 240;
+    labelDK02->setFixedWidth(w);
+    labelDkRozdz2->setFixedWidth(w);
+    labelFps2->setFixedWidth(w);
+    spinBoxIleDni->setFixedWidth(w);
+    spinBoxCzulosc->setFixedWidth(w);
+    comboBoxDetekcja->setFixedWidth(w);
+    lineEditNazwa->setFocus();
+//widgetDodajKam koniec
+
     stack->addWidget(widget);
+    stack->addWidget(widgetDodajKam);
     stack->show();
 
     table->selectRow(0);
     table->setFocus();
 
+    connect(btnZapisz, &QPushButton::clicked, widget,[this,table](){
+        menuListPodglad->clear();
+    qDebug()<< "test 1";
+        widgetVectr.clear();
+        widgetLayutVector.clear();
+        itemVector.clear();
+    qDebug()<< "test 2";
+        audioEnabledVector.fill(false);
+    qDebug()<< "test 3";
+        liczba = 0;
+        for(int x =0; x < playerVector.size(); x++){
+            playerVector[x]->stop();
+        }
+
+        ItemModel->clear();
+        ItemModel->setRowCount(table->rowCount());
+        ItemModel->setColumnCount(table->columnCount());
+        for(int row = 0; row < table->rowCount(); row++){
+            for(int col = 0; col < table->columnCount(); col++){
+                QString text = table->item(row,col) ?table->item(row,col)->text():QString();
+                qDebug()<< text;
+                QStandardItem *item = new QStandardItem(text);
+                item->setTextAlignment(Qt::AlignCenter);
+                ItemModel->setItem(row, col, item);
+            }
+        }
+        qDebug()<< adreshttp;
+        bool ok = zapiszKameryDat("http://" + adreshttp + ":8080/kamery.dat");
+    //    mtx->stopMtx();
+    //    QTimer::singleShot(2000,[this](){mtx->startMtx();});
+        if(ok){
+            QMessageBox::information(nullptr,"INFO","DANE ZAPISANE");
+
+        }else{
+            QMessageBox::information(nullptr,"UWAGA","DANE NIE ZAPISANE");
+        }
+    });
+    connect(btnDodaj, &QPushButton::clicked, widget,[table,labelDK02,stack,widgetDodajKam,
+                        lineEditNazwa,labelDkRozdz2,labelFps2,lineEditAdres,
+                        spinBoxIleDni,spinBoxCzulosc,lineEditPath,path](){
+        stack->setCurrentWidget(widgetDodajKam);
+        QString numer = QString::number(table->rowCount());
+        labelDK02->setText(numer);
+        lineEditNazwa->setFocus();
+        labelDkRozdz2->setText("");
+        labelFps2->setText("");
+        lineEditNazwa->setText("");
+        lineEditAdres->setText("");
+        lineEditPath->setText("");
+        spinBoxIleDni->setValue(7);
+        spinBoxCzulosc->setValue(10000);
+    });
+    connect(btnModyfikuj, &QPushButton::clicked, widget, [table,stack,widgetDodajKam,
+        labelDK02,lineEditNazwa,lineEditAdres,labelDkRozdz2,labelFps2,lineEditPath,spinBoxIleDni,
+        spinBoxCzulosc,comboBoxDetekcja](){
+        stack->setCurrentWidget(widgetDodajKam);
+        int row = table->currentRow();
+        for(int x = 0; x < table->columnCount(); x++){
+            QString text = table->item(row, x)
+                    ?table->item(row, x)->text()
+                    :QString();
+            if(x == 0)
+                labelDK02->setText(text);
+            if(x == 1)
+                lineEditNazwa->setText(text);
+            if(x == 2)
+                lineEditAdres->setText(text);
+            if(x == 3)
+                labelDkRozdz2->setText(text);
+            if(x == 4)
+                labelFps2->setText(text);
+            if(x == 5)
+                lineEditPath->setText(text);
+            if(x == 6)
+                spinBoxIleDni->setValue(text.toInt());
+            if(x == 7)
+                spinBoxCzulosc->setValue(text.toInt());
+            if(x == 8){
+                int index = comboBoxDetekcja->findData(text, Qt::UserRole);
+                if (index >= 0){
+                comboBoxDetekcja->setCurrentIndex(index);
+                }
+            }
+        }
+    });
+    connect(btnUsun, &QPushButton::clicked, widget, [table](){
+        int row = table->currentRow();
+        table->removeRow(row);
+        for(int x = 0; x < table->rowCount(); x++){
+            QTableWidgetItem *item = new QTableWidgetItem(QString::number(x));
+            item->setTextAlignment(Qt::AlignCenter);
+            table->setItem(x,0, item);
+        }
+    });
     connect(btnAnuluj, &QPushButton::clicked, widget, [stack](){
         stack->close();
         stack->deleteLater();
@@ -1597,64 +2012,407 @@ QTableCornerButton::section {
     connect(this, &MainWindow::sygnalResize,widget,[this,stack](){
         stack->setGeometry(0,0,this->width(),this->height());
     });
+    // connect(btnZapisz, &QPushButton::clicked,widgetDodajKam,[stack,widget,labelDK02,
+    //         lineEditNazwa,lineEditAdres,labelDkRozdz2,labelFps2,lineEditPath,spinBoxIleDni,
+    //         spinBoxCzulosc,comboBoxDetekcja,table](){
 
+    //     if(lineEditNazwa->text().trimmed().isEmpty()
+    //         || lineEditAdres->text().trimmed().isEmpty()
+    //         || lineEditPath->text().trimmed().isEmpty()){
+    //         lineEditNazwa->setFocus();
+    //         QMessageBox::information(nullptr,"UEAGA","POLA:\n-KAMERA\n-ADRES KAMERY\nNIE MOGĄ BYĆ PUSTE");
+    //         return;
+    //     }
+    //     int row = labelDK02->text().toInt();
+    //     for(int x = 0; x < table->rowCount(); x++)
+    //     {
+    //         if(x != row){
+    //             QString nazwa = table->item(x,1)->text();
+    //             if(nazwa == lineEditNazwa->text().trimmed())
+    //             {
+    //                 QMessageBox::information(nullptr,"UWAGA",R"(
+    //                     KAMERA O TEJ NAZWIE
+    //                     JUŻ ISTNIEJE
+    //                     ZMIEŃ NAZWĘ KAMERY)");
+    //                 return;
+    //             }
+    //         }
+    //     }
+    //     if(labelDK02->text().toInt() < table->rowCount()){
+    //         // int row = labelDK02->text().toInt();
+    //         // for(int x = 0; x < table->rowCount(); x++)
+    //         // {
+    //         //     if(x != row){
+    //         //         QString nazwa = table->item(x,1)->text();
+    //         //         if(nazwa == lineEditNazwa->text().trimmed())
+    //         //         {
+    //         //             QMessageBox::information(nullptr,"UWAGA",R"(
+    //         //             KAMERA O TEJ NAZWIE
+    //         //             JUŻ ISTNIEJE
+    //         //             ZMIEŃ NAZWĘ KAMERY)");
+    //         //             return;
+    //         //         }
+    //         //     }
+    //         // }
+    //         QStringList lista;
+
+    //         lista = {labelDK02->text().trimmed(),lineEditNazwa->text().trimmed(),
+    //             lineEditAdres->text().trimmed(),labelDkRozdz2->text().trimmed(),
+    //             labelFps2->text().trimmed(), lineEditPath->text().trimmed(),
+    //             spinBoxIleDni->text().trimmed(),spinBoxCzulosc->text().trimmed(),
+    //             comboBoxDetekcja->currentData(Qt::UserRole).toString()
+    //         };
+    //         for(int x = 0; x < table->columnCount(); x++){
+    //             QTableWidgetItem *item = new QTableWidgetItem(lista[x]);
+    //             item->setTextAlignment(Qt::AlignCenter);
+    //             table->setItem(row, x, item);
+    //             stack->setCurrentWidget(widget);
+    //         }
+    //     }else{
+    //         // for(int x = 0; x < table->rowCount(); x++){
+    //         //     QString nazwa = table->item(x,1)->text();
+    //         //     if(nazwa == lineEditNazwa->text().trimmed())
+    //         //     {
+    //         //         QMessageBox::information(nullptr,"UWAGA",R"(
+    //         //         KAMERA O TEJ NAZWIE
+    //         //         JUŻ ISTNIEJE
+    //         //         ZMIEŃ NAZWĘ KAMERY)");
+    //         //         return;
+    //         //     }
+    //         // }
+    //         int row = labelDK02->text().toInt();
+    //         QStringList lista;
+    //         lista = {labelDK02->text().trimmed(),lineEditNazwa->text().trimmed(),
+    //                  lineEditAdres->text().trimmed(), labelDkRozdz2->text().trimmed(),
+    //                  labelFps2->text().trimmed(), lineEditPath->text().trimmed(),
+    //                  spinBoxIleDni->text().trimmed(),spinBoxCzulosc->text().trimmed(),
+    //                   comboBoxDetekcja->currentData(Qt::UserRole).toString()
+    //         };
+    //         table->insertRow(row);
+    //         for(int x = 0; x < table->columnCount(); x++){
+    //             QTableWidgetItem *item = new QTableWidgetItem(lista[x]);
+    //             item->setTextAlignment(Qt::AlignCenter);
+    //             table->setItem(row, x, item);
+    //             stack->setCurrentWidget(widget);
+    //         }
+    //     }
+    // });
+    connect(btnTest, &QPushButton::clicked, widgetDodajKam,[this,lineEditAdres,table,
+            labelDK02,lineEditNazwa,lineEditPath,labelFps2, labelDkRozdz2,
+            spinBoxIleDni,spinBoxCzulosc,comboBoxDetekcja,stack,widget](){
+        if(lineEditNazwa->text().trimmed().isEmpty()
+            || lineEditAdres->text().trimmed().isEmpty()
+            || lineEditPath->text().trimmed().isEmpty()){
+            lineEditNazwa->setFocus();
+            QMessageBox::information(nullptr,"UEAGA","POLA:\n-KAMERA\n-ADRES KAMERY\nNIE MOGĄ BYĆ PUSTE");
+            return;
+        }
+        int row = labelDK02->text().toInt();
+        for(int x = 0; x < table->rowCount(); x++)
+        {
+            if(x != row){
+                QString nazwa = table->item(x,1)->text();
+                if(nazwa == lineEditNazwa->text().trimmed())
+                {
+                    QMessageBox::information(nullptr,"UWAGA",R"(
+                        KAMERA O TEJ NAZWIE
+                        JUŻ ISTNIEJE
+                        ZMIEŃ NAZWĘ KAMERY)");
+                    return;
+                }
+            }
+        }
+        qDebug()<<"1";
+        auto [ok, resolution, fps] = ffprobeTest(lineEditAdres->text().trimmed());
+        if(!ok){
+            QMessageBox::information(nullptr,"INFO","SPRAWDŹ:\n- POPRAWNOŚĆ STRUMIENIA\n- ŁĄCZNOŚĆ Z KAMERĄ");
+            return;
+        }
+        qDebug()<<"2";
+        QList list = fps.split("/");
+        labelDkRozdz2->setText("Size:"+resolution);
+        labelFps2->setText("FPS:"+QString::number(list[0].toDouble()/list[1].toDouble(),'f',0)+"/s");
+qDebug()<<"3";
+        QWidget *testWidget = new QWidget(this);
+        testWidget->setStyleSheet(R"(QWidget{
+            background-color: white;
+            border: 4px solid blue;
+        })");
+        testWidget->setAttribute(Qt::WA_DeleteOnClose);
+        int x = this->width();
+        int y = this->height();
+        testWidget->setGeometry(0, 0, x, y);
+        QVBoxLayout *layoutTestWidget = new QVBoxLayout(testWidget);
+        layoutTestWidget->setContentsMargins(30,30,30,30);
+        QLabel *label = new QLabel("POCZEKAJ\n"
+                "JEŚLI OBRAZ NIE POKAŻE SIĘ W CIĄGU PARU SEKUND\n"
+                "SPRAWDŹ ADRES STRUMIENIA",testWidget);
+        QFont font = label->font();
+        font.setPixelSize(24);
+        label->setFont(font);
+        label->setAlignment(Qt::AlignCenter);
+        QHBoxLayout *layouth1 = new QHBoxLayout();
+        QPushButton *btnStop = new QPushButton("STOP", testWidget);
+        btnStop->setFixedWidth(150);
+        btnStop->setStyleSheet(stylesheetPushButton);
+        layouth1->addStretch(0);
+        layouth1->addWidget(btnStop);
+        layouth1->addStretch(0);
+
+        layoutTestWidget->addWidget(label);
+        layoutTestWidget->addLayout(layouth1);
+qDebug()<<"4";
+
+        if(!playerek){
+            qDebug()<< "brak playerek" << playerek;
+            playerek = new FfmpegPlayer(this);
+            qDebug()<<"nowy playerek";
+        }
+qDebug()<<"5"<<lineEditAdres->text().trimmed();
+        playerek->setLabel(label);
+        playerek->setUrl(lineEditAdres->text().trimmed());
+        playerek->setAspectRatioMode(Qt::KeepAspectRatio);
+        playerek->play();
+        testWidget->show();
+qDebug()<<"6";
+        connect(this, &MainWindow::sygnalResize,testWidget,[this,testWidget](){
+            int x = this->width();
+            int y = this->height();
+            testWidget->setGeometry(0, 0, x, y);
+        });
+
+    //    QPointer<FfmpegPlayer> player = playerek;
+        connect(btnStop, &QPushButton::clicked, testWidget,[this,testWidget,labelDK02,
+                lineEditNazwa,lineEditAdres,labelDkRozdz2,labelFps2,lineEditPath,
+                spinBoxIleDni,spinBoxCzulosc,comboBoxDetekcja,table,row,stack,widget](){
+            if(labelDK02->text().toInt() < table->rowCount()){
+                QStringList lista;
+                lista = {labelDK02->text().trimmed(),lineEditNazwa->text().trimmed(),
+                    lineEditAdres->text().trimmed(),labelDkRozdz2->text().trimmed(),
+                    labelFps2->text().trimmed(), lineEditPath->text().trimmed(),
+                    spinBoxIleDni->text().trimmed(),spinBoxCzulosc->text().trimmed(),
+                    comboBoxDetekcja->currentData(Qt::UserRole).toString()
+                };
+                for(int x = 0; x < table->columnCount(); x++){
+                    QTableWidgetItem *item = new QTableWidgetItem(lista[x]);
+                    item->setTextAlignment(Qt::AlignCenter);
+                    table->setItem(row, x, item);
+                    stack->setCurrentWidget(widget);
+                }
+            }else{
+                int row = labelDK02->text().toInt();
+                QStringList lista;
+                lista = {labelDK02->text().trimmed(),lineEditNazwa->text().trimmed(),
+                    lineEditAdres->text().trimmed(), labelDkRozdz2->text().trimmed(),
+                    labelFps2->text().trimmed(), lineEditPath->text().trimmed(),
+                    spinBoxIleDni->text().trimmed(),spinBoxCzulosc->text().trimmed(),
+                    comboBoxDetekcja->currentData(Qt::UserRole).toString()
+                };
+                table->insertRow(row);
+                for(int x = 0; x < table->columnCount(); x++){
+                    QTableWidgetItem *item = new QTableWidgetItem(lista[x]);
+                    item->setTextAlignment(Qt::AlignCenter);
+                    table->setItem(row, x, item);
+                    stack->setCurrentWidget(widget);
+                }
+            }
+            if (playerek && playerek->isPlaying()) {
+                playerek->stop();
+                playerek->deleteLater();
+                playerek = nullptr;
+            }
+            testWidget->close();
+            testWidget->deleteLater();
+        });
+    });
+    // connect(btnStrefyRuchu, &QPushButton::clicked, widgetDodajKam,[this,lineEditAdres](){
+
+    //     auto [ok, resolution, fps] = ffprobeTest(lineEditAdres->text().trimmed());
+
+    //     if (ok) {
+    //         qDebug() << "Resolution:" << resolution;
+    //         QStringList list = fps.split("/");
+    //         double licznik = list[0].toDouble();
+    //         double mianownik = list[1].toDouble();
+    //         double fpsDouble = licznik/mianownik;
+    //         qDebug()<< fps << fpsDouble;
+    //     } else {
+    //         qDebug() << "Błąd RTSP";
+    //     }
+    // });
+    connect(btnCancel, &QPushButton::clicked,widgetDodajKam,[stack,widget](){
+        stack->setCurrentWidget(widget);
+    });
 }
 
-void MainWindow::czytajKameryDat(QString adres)
+std::tuple<bool, QString, QString> MainWindow::ffprobeTest(const QString &rtspUrl)
 {
-    if(!ItemModel){
-    ItemModel = new QStandardItemModel();
-    }else{
+    QProcess process;
+    QStringList args = {
+        "-v", "error",
+        "-rtsp_transport", "tcp",
+        "-timeout", "5000000",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=width,height,r_frame_rate",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        rtspUrl
+    };
+
+    process.start("ffprobe", args);
+
+    if (!process.waitForStarted(3000))
+        return {false, "", ""};
+
+    if (!process.waitForFinished(8000)) {
+        process.kill();
+        process.waitForFinished();
+        return {false, "", ""};
+    }
+
+    if (process.exitStatus() != QProcess::NormalExit)
+        return {false, "", ""};
+
+    if (process.exitCode() != 0)
+        return {false, "", ""};
+
+    QString wynik = QString::fromUtf8(
+                        process.readAllStandardOutput()
+                        ).trimmed();
+
+    QStringList dane = wynik.split('\n', Qt::SkipEmptyParts);
+
+    if (dane.size() < 3)
+        return {false, "", ""};
+
+    QString resolution = dane[0] + "x" + dane[1];
+    QString fps = dane[2];
+
+    return {true, resolution, fps};
+}
+
+bool MainWindow::czytajKameryDat(const QString &adres)
+{
+    if (!ItemModel)
+    { ItemModel = new QStandardItemModel();
+    }
+    else {
         ItemModel->clear();
     }
-//    QString adres = "http://localhost:8080/kamery.dat";
     QNetworkAccessManager manager;
-    QNetworkRequest request(
-    //    (QUrl("http://localhost:8080/kamery.dat"))
-        (QUrl(adres))
-        );
-
+    QNetworkRequest request((QUrl(adres)));
     QNetworkReply *reply = manager.get(request);
-
     QEventLoop loop;
-    connect(reply, &QNetworkReply::finished,
-            &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() != QNetworkReply::NoError)
-    {
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit); loop.exec();
+    if (reply->error() != QNetworkReply::NoError) {
         qDebug() << reply->errorString();
-        QMessageBox::information(this, "INFO",reply->errorString()+"\n"
-            "PRZYCZYNY:\n"
-            "- zły adres serwera\n"
-            "- brak internetu\n- serwer nie uruchomiony");
+        QMessageBox::information( this, "INFO", reply->errorString() +
+                    "\nPRZYCZYNY:\n"
+                    "- zły adres serwera\n"
+                    "- brak internetu\n"
+                    "- serwer nie uruchomiony" );
         reply->deleteLater();
-        return;
+        ItemModel->clear();
+        return false;
     }
-
     QByteArray data = reply->readAll();
-
     QDataStream stream(data);
     stream.setVersion(QDataStream::Qt_6_0);
-
     qint32 n, m;
     stream >> n >> m;
-
+    if (stream.status() != QDataStream::Ok) {
+        qDebug() << "Błąd odczytu kamery.dat";
+        reply->deleteLater();
+        ItemModel->clear();
+        return false;
+    }
     ItemModel->setRowCount(n);
     ItemModel->setColumnCount(m);
-
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = 0; j < m; ++j)
-        {
-            QString tekst;
-            stream >> tekst;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            QString tekst; stream >> tekst;
             QStandardItem *item = new QStandardItem(tekst);
             item->setTextAlignment(Qt::AlignCenter);
             ItemModel->setItem(i, j, item);
         }
     }
     reply->deleteLater();
+    return true;
+}
+
+bool MainWindow::zapiszKameryDat(const QString &adres)
+{
+    if (!ItemModel) {
+        qDebug() << "Brak ItemModel";
+        return false;
+    }
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_6_0);
+
+    qint32 n = ItemModel->rowCount();
+    qint32 m = ItemModel->columnCount();
+
+    stream << n << m;
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+
+            QString tekst;
+
+            QStandardItem *item = ItemModel->item(i, j);
+
+            if (item)
+                tekst = item->text();
+
+            stream << tekst;
+        }
+    }
+
+    if (stream.status() != QDataStream::Ok) {
+        qDebug() << "Błąd tworzenia danych kamery.dat";
+        return false;
+    }
+
+    QNetworkAccessManager manager;
+
+    QNetworkRequest request((QUrl(adres)));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,
+                      "application/octet-stream");
+
+    QNetworkReply *reply = manager.put(request, data);
+
+    QEventLoop loop;
+
+    connect(reply, &QNetworkReply::finished,
+            &loop, &QEventLoop::quit);
+
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+
+        qDebug() << "Błąd zapisu:" << reply->errorString();
+
+        QMessageBox::information(
+            this,
+            "INFO",
+            reply->errorString() +
+                "\nPRZYCZYNY:\n"
+                "- zły adres serwera\n"
+                "- brak internetu\n"
+                "- serwer nie uruchomiony"
+            );
+
+        reply->deleteLater();
+        return false;
+    }
+
+    qDebug() << "kamery.dat zapisany:"
+             << n << "wierszy,"
+             << m << "kolumn";
+
+    reply->deleteLater();
+
+    return true;
 }
 
 QIcon MainWindow::createGridIcon(int rows, int cols)
@@ -1751,21 +2509,22 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         QLabel *labelAdres = new QLabel("ADRES IP SERWERA:",dialog);
         labelAdres->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         labelAdres->setStyleSheet(stylesheetLabelSelectedBlue);
-        QLineEdit *leditAdres = new QLineEdit(dialog);
-        leditAdres->setStyleSheet(
-            "QLineEdit {"
-            "border: 2px solid blue;"
-            "border-radius: 4px;"
-            "font-size: 18px;"
-            "font-weight: bold;"
-            "}");
-        leditAdres->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        czytajSerweryDat();
+        QComboBox *comboBox = new QComboBox(dialog);
+        comboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        for(int row = 0; row < ItemModelSerweryDat->rowCount();row++){
+            QString nazwa = ItemModelSerweryDat->item(row,1)->text();
+            QString adres = ItemModelSerweryDat->item(row,2)->text();
+
+            comboBox->addItem(nazwa + " - " + adres, adres);
+        }
+        comboBox->setStyleSheet(stylesheetComboBox);
         int w = qMax(labelAdres->sizeHint().width(),
-                     leditAdres->sizeHint().width());
+                     comboBox->sizeHint().width());
         labelAdres->setFixedWidth(w);
-        leditAdres->setFixedWidth(w);
+        comboBox->setFixedWidth(w);
         layouth1->addWidget(labelAdres,1);
-        layouth1->addWidget(leditAdres,1);
+        layouth1->addWidget(comboBox,1);
         QHBoxLayout *layouth2 = new QHBoxLayout();
         QPushButton *btnOk = new QPushButton("OK",dialog);
         btnOk->setStyleSheet(stylesheetPushButton);
@@ -1776,17 +2535,17 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         layoutDialog->addLayout(layouth1);
         layoutDialog->addLayout(layouth2);
         dialog->show();
-        connect(btnOk, &QPushButton::clicked,dialog,[this,leditAdres,dialog](){
-            if(ItemModel){
-                ItemModel->clear();
-                ItemModel->deleteLater();
-                ItemModel = nullptr;
+        connect(btnOk, &QPushButton::clicked, dialog, [this,comboBox, dialog]() {
+            QString adres = comboBox->currentData().toString();
+            adreshttp = adres;
+            if (czytajKameryDat("http://" + adres + ":8080/kamery.dat")) {
+                 if (ItemModel && ItemModel->rowCount() > 0) {
+                     createWidgetUstawienia(); dialog->close();
+                }
+                else{
+                     QMessageBox::information( dialog, "INFO", "Serwer działa, ale nie znaleziono żadnych kamer." );
+                }
             }
-            QString adres = leditAdres->text();
-            czytajKameryDat("http://"+adres+":8080/kamery.dat");
-            if(ItemModel->rowCount() > 0)
-            createWidgetUstawienia();
-            dialog->close();
         });
         connect(btnAnuluj, &QPushButton::clicked, dialog, [dialog](){
             dialog->close();

@@ -13,6 +13,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QFileSystemWatcher>
 
 class MediaMTXManager;
 class HttpSerwer;
@@ -28,7 +29,8 @@ protected:
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void czytajKameryDat(QString adres);
+    bool czytajKameryDat(const QString &adres);
+    bool zapiszKameryDat(const QString &adres);
     QStandardItemModel *ItemModel = nullptr;
     QStandardItemModel *ItemModelSerweryDat = nullptr;
     QString appHomePath;
@@ -52,6 +54,8 @@ private:
     bool statusUkrytySerwer = true;
     bool statusUkrytyPodglad = true;
     bool statusUkrytyNagrania = true;
+    QFileSystemWatcher fileWatcher;
+    std::tuple<bool, QString, QString> ffprobeTest(const QString &rtspUrl);
     MediaMTXManager *mtx;
     QIcon createGridIcon(int rows, int cols);
     QVector<QWidget *> widgetVectr;
@@ -59,16 +63,20 @@ private:
     QVector<QListWidgetItem *> itemVector;
     QVector<QLabel *> labelVideoVector;
     QVector<FfmpegPlayer *> playerVector;
+    FfmpegPlayer *playerek = nullptr;
     QVector<bool> ignoreAspectRatio; // stan IgnoreAspectRatio per kamera (dla btnResize)
     QVector<QWidget *> kameraWidgetVector;
     QVector<QSlider *> sliderVector;
     QVector<QPushButton *> btnAudioOnVector;
     QVector<bool> audioEnabledVector;
+    QString adreshttp;
     QString stylesheetPushButton;
     QString stylesheetPushButtonRed;
     QString stylesheetLabelSelectedBlue;
     QString stylesheetListWidgetBlue;
     QString stylesheetSliderBlue;
+    QString stylesheetComboBox;
+    QString stylesheetTable;
     QWidget *centralWidget;
     QWidget *drawerWidgetSerwer;
     QWidget *drawerWidgetPodglad;

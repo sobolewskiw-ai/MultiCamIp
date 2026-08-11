@@ -680,7 +680,7 @@ void FindNewCamera::buttonZapisz_cliced()
     // --- Modalne wyświetlenie, czekamy aż user kliknie OK
     if (dialog->exec() == QDialog::Accepted)
     {
-        nazwaKamery = textEdit->text();
+        nazwaKamery = textEdit->text().trimmed().remove(' ');
         falsetrue = boolCheck->isChecked();
 //        FileDurationMin = int1Spin->value();
         IleDayMax = int2Spin->value();
