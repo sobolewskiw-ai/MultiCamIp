@@ -1,0 +1,14 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Zaokrąglony trójkąt Play przesunięty lekko w prawo dla równowagi optycznej -->
+  <path d="M 410,310 
+           L 660,460 
+           A 48,48 0 0 1 660,540 
+           L 410,690 
+           A 48,48 0 0 1 340,650 
+           L 340,350 
+           A 48,48 0 0 1 410,310 Z" 
+        fill="none" stroke="#0074d9" stroke-width="48" stroke-linejoin="round" stroke-linecap="round" />
+</svg>

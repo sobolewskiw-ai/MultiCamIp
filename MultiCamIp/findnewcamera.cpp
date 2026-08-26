@@ -239,8 +239,6 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 4 Przycisk i lista
     // ===============================
     buttonSkanuj = new QPushButton("Skanuj", this);
-    buttonSkanuj->setIcon(QIcon(":/icons/skanuj.svg"));
-    buttonSkanuj->setIconSize(QSize(32,32));
     buttonSkanuj->setStyleSheet(stylesheetPushButton);
     buttonSkanuj->setMinimumWidth(400); // wymusza minimalną szerokość layoutLewy
     widgetListListaStrumieni = new QListWidget(this);
@@ -249,17 +247,11 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // ===============================
     QHBoxLayout *layoutPoziom4 = new QHBoxLayout();
     buttonPlay = new QPushButton("Play", this);
-    buttonPlay->setIcon(QIcon(":/icons/play.svg"));
-    buttonPlay->setIconSize(QSize(32,32));
     buttonPlay->setStyleSheet(stylesheetPushButton);
     buttonZapisz = new QPushButton("Zapisz", this);
-    buttonZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
-    buttonZapisz->setIconSize(QSize(32,32));
     buttonZapisz->setStyleSheet(stylesheetPushButton);
     buttonZapisz->setEnabled(false);
     buttonZamknij = new QPushButton("Zamknij", this);
-    buttonZamknij->setIcon(QIcon(":/icons/zamknij.svg"));
-    buttonZamknij->setIconSize(QSize(32,32));
     buttonZamknij->setStyleSheet(stylesheetPushButton);
     layoutPoziom4->addWidget(buttonPlay);
     layoutPoziom4->addWidget(buttonZapisz);

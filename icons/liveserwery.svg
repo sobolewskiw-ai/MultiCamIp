@@ -1,0 +1,21 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <g fill="none" stroke="#0074d9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Serwer 1 (Górny) -->
+    <rect x="280" y="440" width="440" height="110" rx="20" stroke-width="48" />
+    <circle cx="350" cy="495" r="15" fill="#0074d9" stroke="none" />
+    <line x1="430" y1="495" x2="640" y2="495" stroke-width="36" />
+    
+    <!-- Serwer 2 (Dolny) -->
+    <rect x="280" y="610" width="440" height="110" rx="20" stroke-width="48" />
+    <circle cx="350" cy="665" r="15" fill="#0074d9" stroke="none" />
+    <line x1="430" y1="665" x2="640" y2="665" stroke-width="36" />
+    
+    <!-- Sygnał "Live" (Fale na górze) -->
+    <circle cx="500" cy="330" r="20" fill="#0074d9" stroke="none" />
+    <path d="M 420,290 A 90,90 0 0 1 580,290" stroke-width="44" />
+    <path d="M 340,240 A 190,190 0 0 1 660,240" stroke-width="44" />
+  </g>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Znacznik OK -->
+  <path d="M 320,500 L 440,620 L 680,380" 
+        fill="none" stroke="#0074d9" stroke-width="54" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

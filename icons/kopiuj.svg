@@ -1,0 +1,13 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Ikona kopiowania (dwa nakładające się dokumenty) -->
+  <g fill="none" stroke="#0074d9" stroke-width="50" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Arkusz z tyłu / pod spodem -->
+    <path d="M 440,300 L 640,300 A 30,30 0 0 1 670,330 L 670,560 A 30,30 0 0 1 640,590 L 440,590 A 30,30 0 0 1 410,560 L 410,330 A 30,30 0 0 1 440,300 Z" />
+    
+    <!-- Arkusz z przodu (lekko przesunięty w lewo i w dół, z czystym białym tłem, aby zasłonić tylny arkusz) -->
+    <path d="M 360,410 L 560,410 A 30,30 0 0 1 590,440 L 590,670 A 30,30 0 0 1 560,700 L 360,700 A 30,30 0 0 1 330,670 L 330,440 A 30,30 0 0 1 360,410 Z" fill="#ffffff" />
+  </g>
+</svg>

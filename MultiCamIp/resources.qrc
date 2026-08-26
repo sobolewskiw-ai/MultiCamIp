@@ -14,19 +14,5 @@
         <file>icons/speaker-low.svg</file>
         <file>icons/speaker-medium.svg</file>
         <file>icons/speaker-muted.svg</file>
-        <file>icons/ukryj.svg</file>
-        <file>icons/play.svg</file>
-        <file>icons/zamknij.svg</file>
-        <file>icons/zapisz.svg</file>
-        <file>icons/skanuj.svg</file>
-        <file>icons/anuluj.svg</file>
-        <file>icons/ok.svg</file>
-        <file>icons/dodaj.svg</file>
-        <file>icons/pokazmodyfikuj.svg</file>
-        <file>icons/strefyruchu.svg</file>
-        <file>icons/usun.svg</file>
-        <file>icons/liveserwery.svg</file>
-        <file>icons/token.svg</file>
-        <file>icons/kopiuj.svg</file>
     </qresource>
 </RCC>

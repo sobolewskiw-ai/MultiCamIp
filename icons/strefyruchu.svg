@@ -1,0 +1,16 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Strefy ruchu (fale / koncentryczne łuki) -->
+  <g fill="none" stroke="#0074d9" stroke-width="50" stroke-linecap="round">
+    <!-- Centralny punkt/obiekt -->
+    <circle cx="500" cy="700" r="30" fill="#0074d9" />
+    <!-- Pierwsza strefa -->
+    <path d="M 360,560 A 200,200 0 0 1 640,560" />
+    <!-- Druga strefa -->
+    <path d="M 260,460 A 340,340 0 0 1 740,460" />
+    <!-- Trzecia strefa -->
+    <path d="M 160,360 A 480,480 0 0 1 840,360" />
+  </g>
+</svg>

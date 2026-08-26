@@ -29,9 +29,6 @@
 #include <QLineEdit>
 #include <QSettings>
 #include <QUrl>
-#include <QGuiApplication>
-#include <QClipboard>
-#include <QToolTip>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -277,7 +274,6 @@ void MainWindow::setupUi()
     przerwa->setFixedWidth(10);
     toolbar->addWidget(przerwa);
     QToolButton *toolButtonSerwer = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionSerwer));
-    toolButtonSerwer->setFocusPolicy(Qt::StrongFocus);  //tutaj
     toolButtonSerwer->setFixedWidth(200);
     toolButtonSerwer->setStyleSheet(
         "QToolButton {"
@@ -313,12 +309,11 @@ void MainWindow::setupUi()
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonSerwer->setPalette(pal);
     }
-    connect(toggleActionSerwer, &QAction::triggered, this,[this,toolButtonSerwer](){
+    connect(toggleActionSerwer, &QAction::triggered, this,[this](){
         ukryjPokazPanelSerwer();
         if(livePodgladWidget){
         livePodgladWidget->hide();
         centralLabel->show();
-        toolButtonSerwer->setFocus();   //tutaj
         }
     });
     QVBoxLayout *layoutSerwer = new QVBoxLayout(drawerWidgetSerwer);
@@ -354,12 +349,6 @@ void MainWindow::setupUi()
     item3->setIcon(QIcon(":/icons/szukaj.png"));
     item3->setData(Qt::UserRole, "USTAWIENIA");
     menuListSerwer->addItem(item3);
-    //Add item4
-    QListWidgetItem *item4 = new QListWidgetItem("TOKEN HTTP");
-    item4->setFont(itemfont);
-    item4->setIcon(QIcon(":/icons/token.svg"));
-    item4->setData(Qt::UserRole, "TOKEN");
-    menuListSerwer->addItem(item4);
 
     layoutSerwer->addWidget(menuListSerwer);
     menuListSerwer->setFocus();
@@ -368,8 +357,6 @@ void MainWindow::setupUi()
     connect(menuListSerwer, &QListWidget::itemActivated, this, &MainWindow::onMenuItemSerwerClicked);
 
     QPushButton *closeBtnSerwer = new QPushButton("Ukryj", drawerWidgetSerwer);
-    closeBtnSerwer->setIcon(QIcon(":/icons/ukryj.svg"));
-    closeBtnSerwer->setIconSize(QSize(32,32));
     closeBtnSerwer->setStyleSheet(stylesheetPushButton);
     connect(closeBtnSerwer, &QPushButton::clicked, this, &MainWindow::ukryjPokazPanelSerwer);
     //layoutSerwer->addStretch(1);
@@ -382,7 +369,6 @@ void MainWindow::setupUi()
     przerwa2->setFixedWidth(10);
     toolbar->addWidget(przerwa2);
     QToolButton *toolButtonPodglad = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionPodglad));
-    toolButtonPodglad->setFocusPolicy(Qt::StrongFocus);  //tutaj
     toolButtonPodglad->setFixedWidth(200);
     toolButtonPodglad->setStyleSheet(
         "QToolButton {"
@@ -412,15 +398,14 @@ void MainWindow::setupUi()
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonPodglad->setPalette(pal);
     }
-    connect(toggleActionPodglad, &QAction::triggered, this,[this,toolButtonPodglad](){
+    connect(toggleActionPodglad, &QAction::triggered, this,[this](){
         ukryjPokazPanelPodglad();
         if(livePodgladWidget){
             centralLabel->hide();
             livePodgladWidget->show();
-            toolButtonPodglad->setFocus();  //tutaj
         }
-    });
 
+    });
     QVBoxLayout *layoutPodglad = new QVBoxLayout(drawerWidgetPodglad);
     layoutPodglad->setContentsMargins(8,8,8,8);
     layoutPodglad->setSpacing(8);
@@ -440,8 +425,6 @@ void MainWindow::setupUi()
 //    createWidgetListaLivekamery();
 
     QPushButton *btnSerweryLiveStream = new QPushButton("LIVE SERWERY",drawerWidgetPodglad);
-    btnSerweryLiveStream->setIcon(QIcon(":/icons/liveserwery.svg"));
-    btnSerweryLiveStream->setIconSize(QSize(32,32));
     btnSerweryLiveStream->setStyleSheet(stylesheetPushButton + "QPushButton { font-size: 24px; }");
     btnSerweryLiveStream->setMinimumHeight(50);
     layoutPodglad->addWidget(btnSerweryLiveStream);
@@ -879,30 +862,26 @@ void MainWindow::setupUi()
         });
         connect(btnRozlacz, &QPushButton::clicked, dialog, [this](){
             menuListPodglad->clear();
-            qDebug()<< "btnRozlacz test 1";
+    qDebug()<< "test 1";
             widgetVectr.clear();
             widgetLayutVector.clear();
             itemVector.clear();
-            qDebug()<< "btnRozlacz test 2";
+    qDebug()<< "test 2";
             audioEnabledVector.fill(false);
-            qDebug()<< "btnRozlacz test 3";
+    qDebug()<< "test 3";
             liczba = 0;
             for(int x =0; x < playerVector.size(); x++){
                 // KRYTYCZNA POPRAWKA (null-deref): patrz komentarz przy
                 // analogicznej pętli w konstruktorze MainWindow.
-                if (playerVector[x]){
+                if (playerVector[x])
                     playerVector[x]->stop();
-                    qDebug()<< "btnRozlacz test 4" << x;
-                }
-                qDebug()<< "btnRozlacz test 5->" << x;
+    qDebug()<< "test 4" << x;
             }
-            qDebug()<< "btnRozlacz test 6";
         });
         connect(btnAnuluj,&QPushButton::clicked, dialog,&QDialog::close);
-            qDebug()<< "btnAnuluj powoduje linia1";
-            dialog->show();
-            qDebug()<< "btnAnuluj powoduje linia2";
-        });
+
+        dialog->show();
+    });
 
     QGroupBox *groupBox = new QGroupBox("widok okna liveStream",drawerWidgetPodglad);
     groupBox->setAlignment(Qt::AlignCenter);
@@ -954,8 +933,6 @@ void MainWindow::setupUi()
     groupBox->setLayout(layoutWidokOkien);
 
     QPushButton *closeBtnPodglad = new QPushButton("Ukryj", drawerWidgetPodglad);
-    closeBtnPodglad->setIcon(QIcon(":/icons/ukryj.svg"));
-    closeBtnPodglad->setIconSize(QSize(32,32));
     closeBtnPodglad->setStyleSheet(stylesheetPushButton);
     connect(closeBtnPodglad, &QPushButton::clicked, this, &MainWindow::ukryjPokazPanelPodglad);
 //    layoutPodglad->addStretch(1);
@@ -966,7 +943,6 @@ void MainWindow::setupUi()
     QAction *toggleActionNagrania = toolbar->addAction("☰ NAGRANIA");
     toggleActionNagrania->setCheckable(true);
     QToolButton *toolButtonNagrania = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionNagrania));
-    toolButtonNagrania->setFocusPolicy(Qt::StrongFocus);  //tutaj
     toolButtonNagrania->setFixedWidth(200);
     toolButtonNagrania->setStyleSheet(
         "QToolButton {"
@@ -996,12 +972,11 @@ void MainWindow::setupUi()
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonNagrania->setPalette(pal);
     }
-    connect(toggleActionNagrania, &QAction::triggered, this,[this,toolButtonNagrania](){
+    connect(toggleActionNagrania, &QAction::triggered, this,[this](){
         ukryjPokazPanelNagrania();
         if(livePodgladWidget){
             livePodgladWidget->hide();
             centralLabel->show();
-            toolButtonNagrania->setFocus();    //tutal
         }
     });
     QVBoxLayout *layoutNagrania = new QVBoxLayout(drawerWidgetNagrania);
@@ -1014,8 +989,6 @@ void MainWindow::setupUi()
     layoutNagrania->addWidget(titleNagrania);
 
     QPushButton *closeBtnNagrania = new QPushButton("Ukryj", drawerWidgetNagrania);
-    closeBtnNagrania->setIcon(QIcon(":/icons/ukryj.svg"));
-    closeBtnNagrania->setIconSize(QSize(32,32));
     closeBtnNagrania->setStyleSheet(stylesheetPushButton);
     connect(closeBtnNagrania, &QPushButton::clicked, this, &MainWindow::ukryjPokazPanelNagrania);
     layoutNagrania->addStretch(1);
@@ -1685,28 +1658,16 @@ void MainWindow::createWidgetUstawienia()
 
     QHBoxLayout *layouth1 = new QHBoxLayout();
     QPushButton *btnZapisz = new QPushButton("ZAPISZ",widget);
-    btnZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
-    btnZapisz->setIconSize(QSize(32,32));
     btnZapisz->setStyleSheet(stylesheetPushButton);
     QPushButton *btnDodaj = new QPushButton("DODAJ",widget);
-    btnDodaj->setIcon(QIcon(":/icons/dodaj.svg"));
-    btnDodaj->setIconSize(QSize(32,32));
     btnDodaj->setStyleSheet(stylesheetPushButton);
     QPushButton *btnModyfikuj = new QPushButton("POKAŻ - MODYFIKUJ",widget);
-    btnModyfikuj->setIcon(QIcon(":/icons/pokazmodyfikuj.svg"));
-    btnModyfikuj->setIconSize(QSize(32,32));
     btnModyfikuj->setStyleSheet(stylesheetPushButton);
     QPushButton *strefyRuchu = new QPushButton("STREFY RUCHU",widget);
-    strefyRuchu->setIcon(QIcon(":/icons/strefyruchu.svg"));
-    strefyRuchu->setIconSize(QSize(32,32));
     strefyRuchu->setStyleSheet(stylesheetPushButton);
     QPushButton *btnUsun = new QPushButton("USUŃ",widget);
-    btnUsun->setIcon(QIcon(":/icons/usun.svg"));
-    btnUsun->setIconSize(QSize(32,32));
     btnUsun->setStyleSheet(stylesheetPushButton);
     QPushButton *btnAnuluj = new QPushButton("ANULUJ",widget);
-    btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
-    btnAnuluj->setIconSize(QSize(32,32));
     btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
     layouth1->addWidget(btnZapisz,1);
     layouth1->addWidget(btnDodaj,1);
@@ -2683,12 +2644,8 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         layouth1->addWidget(comboBox,1);
         QHBoxLayout *layouth2 = new QHBoxLayout();
         QPushButton *btnOk = new QPushButton("OK",dialog);
-        btnOk->setIcon(QIcon(":/icons/ok.svg"));
-        btnOk->setIconSize(QSize(32,32));
         btnOk->setStyleSheet(stylesheetPushButton);
         QPushButton *btnAnuluj = new QPushButton("ANULUJ",dialog);
-        btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
-        btnAnuluj->setIconSize(QSize(32,32));
         btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
         layouth2->addWidget(btnOk,1);
         layouth2->addWidget(btnAnuluj,1);
@@ -2709,85 +2666,6 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         });
         connect(btnAnuluj, &QPushButton::clicked, dialog, [dialog](){
             dialog->close();
-        });
-    }else if(item->data(Qt::UserRole).toString() == "TOKEN"){
-        QFile file(QDir(appHomePath).filePath(".http_auth_token"));
-        QString tokentext;
-        if(file.open(QIODevice::ReadOnly)){
-            QTextStream stream(&file);
-            tokentext = stream.readAll();
-
-            qDebug()<<"PRZECZYTAŁEM";
-        }else{
-            QMessageBox::information(nullptr,"UWAGA",
-                "NIE MOŻNA OTWORZYĆ PLIKU\nERROR:"+file.errorString());
-            return;
-        }
-        file.close();
-
-        QDialog *dialog = new QDialog(this);
-        dialog->setFixedWidth(400);
-        dialog->setWindowTitle("TWÓJ TOKEN:");
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-        QVBoxLayout *dialoglayout = new QVBoxLayout(dialog);
-        QLabel *label = new QLabel(dialog);
-        label->setText("token jest potrzebny do logowania\nze zdalnego komputera\n"
-                       "do tego serwera");
-        QLineEdit *lineEdit = new QLineEdit();
-        lineEdit->setAlignment(Qt::AlignCenter);
-        lineEdit->setReadOnly(true);
-        lineEdit->setText(tokentext);
-        QFont font = lineEdit->font();
-        font.setPointSize(12);
-        font.setBold(true);
-        lineEdit->setFont(font);
-
-        QHBoxLayout *layouth1 = new QHBoxLayout();
-        QPushButton *btnSkopiuj = new QPushButton("SKOPIUJ", dialog);
-        btnSkopiuj->setIcon(QIcon(":/icons/kopiuj.svg"));
-        btnSkopiuj->setIconSize(QSize(24,24));
-        btnSkopiuj->setStyleSheet(stylesheetPushButton);
-        QPushButton *btnZamknij = new QPushButton("ZAMKNIJ", dialog);
-        btnZamknij->setIcon(QIcon(":/icons/zamknij.svg"));
-        btnZamknij->setIconSize(QSize(24,24));
-        btnZamknij->setStyleSheet(stylesheetPushButtonRed);
-        layouth1->addStretch(0);
-        layouth1->addWidget(btnSkopiuj);
-        layouth1->addWidget(btnZamknij);
-        layouth1->addStretch(0);
-
-        dialoglayout->addWidget(label);
-        dialoglayout->addWidget(lineEdit);
-        dialoglayout->addSpacing(50);
-        dialoglayout->addLayout(layouth1);
-        dialog->show();
-        connect(btnZamknij, &QPushButton::clicked, dialog, [dialog](){
-            dialog->close();
-        });
-        connect(btnSkopiuj, &QPushButton::clicked, dialog, [dialog,lineEdit,btnSkopiuj](){
-            if (!lineEdit->text().isEmpty()) {
-                QGuiApplication::clipboard()->setText(lineEdit->text());
-                QPoint globalPos = btnSkopiuj->mapToGlobal(QPoint(btnSkopiuj->width() / 2, -30));
-            //    QToolTip::showText(globalPos, "Skopiowano!",nullptr);
-                QLabel *dymek = new QLabel(" Skopiowano! ", dialog, Qt::ToolTip | Qt::BypassWindowManagerHint);
-                QPointer<QLabel> safeDymek = dymek;
-                dymek->move(globalPos);
-                dymek->show();
-                QTimer::singleShot(3000, [safeDymek]() {
-                    //dymek->deleteLater();
-                    if (safeDymek) {
-                        safeDymek->deleteLater();
-                    }
-                });
-            }else{
-                QPoint globalPos = btnSkopiuj->mapToGlobal(QPoint(btnSkopiuj->width() / 2, -30));
-                QLabel *dymek = new QLabel(" Pole jest puste\nnie skopiowano ", nullptr, Qt::ToolTip | Qt::BypassWindowManagerHint);
-                dymek->move(globalPos);
-                dymek->show();
-                QTimer::singleShot(3000, [dymek]() {
-                    dymek->deleteLater();
-                });
-            }
         });
     }
 }

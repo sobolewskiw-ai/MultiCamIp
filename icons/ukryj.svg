@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Ukryj</title>
+  <desc>Ikona ukrywania obrazu dla CameraPlayer</desc>
+  <circle cx="512" cy="512" r="455" fill="#ffffff"/>
+
+  <!-- Eye -->
+  <path d="M185 480 C265 365 380 300 512 300 C644 300 759 365 839 480 C851 497 851 527 839 544 C759 659 644 724 512 724 C380 724 265 659 185 544 C173 527 173 497 185 480 Z"
+        fill="none" stroke="#0876D9" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Iris -->
+  <circle cx="512" cy="512" r="112" fill="#0876D9"/>
+  <circle cx="551" cy="468" r="27" fill="#ffffff"/>
+
+  <!-- Hide slash -->
+  <path d="M335 335 L689 689"
+        fill="none" stroke="#0876D9" stroke-width="58" stroke-linecap="round"/>
+
+  <!-- Label -->
+  <text x="512" y="895"
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="150"
+        font-weight="700"
+        fill="#0876D9">Ukryj</text>
+</svg>

@@ -497,17 +497,6 @@ QString MediaMTXManager::generateOrLoadAdminPassword()
     return generated;
 }
 
-QString MediaMTXManager::yamlDoubleQuoted(const QString &value)
-{
-    // Standardowe escapowanie dla podwójnie-cudzysłowionego skalara YAML:
-    // najpierw backslash (żeby nie escapować własnego escapowania), potem
-    // cudzysłów.
-    QString escaped = value;
-    escaped.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
-    escaped.replace(QLatin1Char('"'), QLatin1String("\\\""));
-    return QLatin1Char('"') + escaped + QLatin1Char('"');
-}
-
 void MediaMTXManager::generateConfig(QAbstractItemModel* model)
 {
     QString configPath = installDirMtx + "/mediamtx.yml";
@@ -515,7 +504,9 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     qDebug()<<"plik konfiguracji"<<configPath;
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
+
     QTextStream out(&file);
+
     // --- GLOBAL SETTINGS ---;
     out << "logLevel: info\n";
     out << "api: yes\n";
@@ -523,12 +514,14 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     out << "rtspAddress: :8554\n";
     //out << "protocols: [tcp,udp]\n";  "rtspTransports: [tcp, udp]\n";
     out << "rtspTransports: [tcp, udp]\n";
+
     out << "readTimeout: 30s\n";
     out <<  "writeTimeout: 30s\n";
     //out << "readBufferCount: 2048\n";  "writeQueueSize: 2048\n";
     out << "writeQueueSize: 2048\n";
     //out << "readBufferCount: 32\n";
     out << "\n";
+
     out << "authMethod: internal\n";
     out << "authInternalUsers:\n";
     // UWAGA (bezpieczeństwo): użytkownik "any" bez hasła z pełnymi prawami
@@ -549,10 +542,12 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     //out << "  path:\n";
     out << "  - action: playback\n";
     //out << "  path:\n";
+
     // KRYTYCZNA POPRAWKA: hasło administratora API MediaMTX było wcześniej
     // zaszyte na stałe w kodzie źródłowym ("mocny123456") - patrz
     // generateOrLoadAdminPassword().
     adminPassword = generateOrLoadAdminPassword();
+
     out << "- user: admin\n";
     out << "  pass: " << adminPassword << "\n";
     out << "  ips: []\n";
@@ -561,7 +556,9 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
     out << "  - action: metrics\n";
     out << "  - action: pprof\n";
     out << "\n";
+
     QString recordPathMTX = mainwindow->appHomePath+"/tmp/%path";
+
     out << "paths:\n";
     for (int i = 0; i < model->rowCount(); ++i)
     {
@@ -573,18 +570,20 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
         if (name != rawName)
             qWarning() << "MediaMTXManager: nazwa kamery zawierała niedozwolone znaki, oczyszczono:"
                        << rawName << "->" << name;
+
         QString url = model->index(i, 2).data().toString();
         // KRYTYCZNA POPRAWKA (wstrzykiwanie poleceń powłoki): adres URL
         // (może zawierać login/hasło kamery wpisane przez użytkownika)
         // musi być bezpiecznie osadzony w apostrofowanym skrypcie bash -
-        // patrz shellEscapeSingleQuoted(). Używane w gałęzi HTTP poniżej
-        // (tam URL trafia do skryptu bash uruchamianego przez runOnInit).
+        // patrz shellEscapeSingleQuoted().
         QString safeUrl = shellEscapeSingleQuoted(url);
+
         // Tworzymy katalog dla KAŻDEJ kamery przed warunkami
         QDir dir(mainwindow->appHomePath + "/tmp/" + name);
         if(!dir.exists()){
             dir.mkpath(mainwindow->appHomePath + "/tmp/" + name); // `name` już oczyszczone
         }
+
         // POWAŻNA POPRAWKA: poniższy blok if/else był wcześniej zepsuty -
         // brakowało "else" między gałęzią RTSP i HTTP, przez co dla kamer
         // RTSP do YAML trafiały DWA wpisy pod tym samym kluczem "name:"
@@ -594,135 +593,86 @@ void MediaMTXManager::generateConfig(QAbstractItemModel* model)
         // wcale (skoro warunek if dotyczył tylko rtsp://, a brak else
         // oznaczał, że kod "HTTP" był w praktyce nieosiągalny jako osobna
         // gałąź). Teraz każda kamera dostaje dokładnie JEDEN wpis.
-        if (url.startsWith("rtsp://", Qt::CaseInsensitive))
-        {
-            qDebug()
-            << "KAMERA RTSP -> BEZPOŚREDNIO MEDIAmtx:"
-            << name
-            << url;
+        if(url.startsWith("rtsp://", Qt::CaseInsensitive)){
+            qDebug() << "KAMERA RTSP -> SYNCHRONIZACJA CZASU:" << name;
+
             out << "  " << name << ":\n";
-            // ----------------------------------------------------
-            // Źródło
-            // ----------------------------------------------------
-            // POWAŻNA POPRAWKA (bezpieczeństwo/poprawność YAML): URL (może
-            // zawierać login/hasło kamery) jest teraz emitowany jako
-            // CYTOWANY łańcuch YAML (yamlDoubleQuoted()) zamiast gołego,
-            // niecytowanego skalara. Bez cytowania znaki specjalne YAML
-            // (np. "#" rozpoczynające komentarz, wiodące znaki "{", "[",
-            // "*", "&", "!", "%" itd.) mogłyby zniekształcić parsowanie
-            // wartości albo całego pliku konfiguracyjnego.
-            out << "    source: " << yamlDoubleQuoted(url) << "\n";
-            // ----------------------------------------------------
-            // MediaMTX ma utrzymywać połączenie ze źródłem
-            // nawet jeśli nikt aktualnie nie ogląda.
-            // ----------------------------------------------------
-            out << "    sourceOnDemand: no\n";
-            // ----------------------------------------------------
-            // RTSP przez TCP
-            // ----------------------------------------------------
-            out << "    rtspTransport: tcp\n";
-            // ----------------------------------------------------
-            // Nagrywanie
-            // ----------------------------------------------------
-            out << "    record: yes\n";
-            out << "    recordPath: "
-                << recordPathMTX
-                << "/%Y-%m-%d_%H-%M-%S\n";
-            out << "    recordFormat: fmp4\n";
-            out << "    recordPartDuration: 100ms\n";
-            out << "    recordSegmentDuration: 60s\n";
-            out << "    recordDeleteAfter: 360s\n";
-            out << "\n";
-        }
-        // ========================================================
-        // HTTP
-        //
-        // KAMERA HTTP
-        //      ↓
-        //    FFmpeg
-        //      ↓
-        //    RTSP
-        //      ↓
-        //   MediaMTX
-        //
-        // ========================================================
-        else if (url.startsWith("http://", Qt::CaseInsensitive))
-        {
-            qDebug()
-            << "KAMERA HTTP -> FFmpeg -> MediaMTX:"
-            << name
-            << url;
-            out << "  " << name << ":\n";
-            // FFmpeg będzie publisherem
             out << "    source: publisher\n";
-            // ------------------------------------------------------------
-            // WATCHDOG
-            // ------------------------------------------------------------
             out << "    runOnInit: |\n";
             out << "      bash -c '\n";
-            out << "      while true; do\n";
-            out << "        echo \"[MediaMTX] START HTTP -> RTSP: $MTX_PATH\"\n";
-            // ------------------------------------------------------------
-            // TWÓJ DZIAŁAJĄCY FFMPEG - BEZ ZMIAN
-            // ------------------------------------------------------------
-            out << "        ffmpeg -hide_banner -loglevel error \\\n";
-            out << "        -fflags +genpts+nobuffer \\\n";
-            out << "        -use_wallclock_as_timestamps 1 \\\n";
-            // KRYTYCZNA POPRAWKA (wstrzykiwanie poleceń powłoki): tu MUSI
-            // być `safeUrl` (bezpiecznie zescapowany apostrofami dla
-            // apostrofowanego bloku `bash -c '...'`), a NIE gołe `url`.
-            // `url` może zawierać znak apostrofu (np. w haśle kamery
-            // wpisanym przez użytkownika), który przedwcześnie zamknąłby
-            // apostrofowany łańcuch powłoki i pozwolił wstrzyknąć dowolne
-            // polecenie systemowe wykonywane przez MediaMTX - dokładnie ta
-            // sama luka, którą wcześniej naprawiliśmy w tej rozmowie, ale
-            // reintrodukowana przez użycie `url` zamiast `safeUrl` w tej
-            // nowej wersji funkcji.
-            out << "        -i \"" << safeUrl << "\" \\\n";
-            out << "        -c:v copy -c:a aac -b:a 64k \\\n";
-            out << "        -fflags +genpts+flush_packets \\\n";
-            out << "        -f rtsp \\\n";
-            out << "        -rtsp_transport tcp \\\n";
-            out << "        -pkt_size 1400 \\\n";
-            out << "        rtsp://127.0.0.1:8554/$MTX_PATH\n";
-            // ------------------------------------------------------------
-            // FFMPEG ZAKOŃCZONY
-            // ------------------------------------------------------------
-            out << "        RET=$?\n";
-            out << "        echo \"[MediaMTX] HTTP FFmpeg zakończony: $MTX_PATH, kod=$RET\"\n";
-            out << "        echo \"[MediaMTX] Ponowne połączenie za 5 sekund...\"\n";
-            out << "        sleep 5\n";
-            out << "      done\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
+
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
+
+            // URUCHOMIENIE FFMPEG Z JAWNYM WYŁĄCZENIEM BUFORÓW NA WEJŚCIU (PRZED -i)
+            out << "      ffmpeg -hide_banner -loglevel error -rtsp_transport tcp \\\n";
+            out << "      -fflags nobuffer+genpts -flags low_delay -async 1 \\\n"; // <-- DODAJ TĘ LINIĘ
+            out << "      -i \"" << safeUrl << "\" \\\n";
+
+            // PROCESOWANIE ZEROLATENCY NA WYJŚCIU
+            out << "      -c:v h264 -preset ultrafast -tune zerolatency -g 25 -r 25 \\\n";
+            out << "      -c:a copy -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
+
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
             out << "      '\n";
-            // ------------------------------------------------------------
-            // NAGRANIE
-            // ------------------------------------------------------------
+            // POWAŻNA POPRAWKA (brak auto-reconnect po stronie MediaMTX):
+            // runOnInit uruchamia powyższy skrypt TYLKO RAZ, przy starcie
+            // MediaMTX / wczytaniu configu. Gdy ffmpeg (wewnętrzny
+            // publisher) padnie z powodu utraty połączenia z kamerą, cały
+            // skrypt bash kończy działanie (po "wait $FFMPEG_PID") i BEZ
+            // TEJ OPCJI MediaMTX nigdy go nie uruchomi ponownie - ścieżka
+            // zostaje martwa aż do ręcznego zatrzymania i wystartowania
+            // całego serwera. "runOnInitRestart: yes" każe MediaMTX
+            // automatycznie uruchomić skrypt od nowa za każdym razem, gdy
+            // się zakończy - to jest odpowiednik reconnectu po stronie
+            // MediaMTX (niezależny od reconnectu w FfmpegPlayer, który
+            // dotyczy tylko odtwarzacza po stronie GUI).
+            out << "    runOnInitRestart: yes\n";
+
             out << "    record: yes\n";
-            out << "    recordPath: "
-                << recordPathMTX
-                << "/%Y-%m-%d_%H-%M-%S\n";
+            out << "    recordPath: " << recordPathMTX << "/%Y-%m-%d_%H-%M-%S\n";
+            out << "    recordFormat: fmp4\n";
+            out << "    recordPartDuration: 100ms\n";
+            out << "    recordSegmentDuration: 60s\n";
+            out << "    recordDeleteAfter: 360s\n";
+            out << "\n";
+        } else {
+            qDebug() << "KAMERA HTTP -> SYNCHRONIZACJA CZASU:" << name;
+
+            out << "  " << name << ":\n";
+            out << "    source: publisher\n";
+            out << "    runOnInit: |\n";
+            out << "      bash -c '\n";
+            out << "      trap \"kill $FFMPEG_PID 2>/dev/null; exit 0\" SIGTERM\n";
+
+            // Czekaj na sekundę :00 zegara systemowego komputera
+            //out << "      while [ $(date +%S) -ne 0 ]; do sleep 0.2; done\n";
+
+            out << "      ffmpeg -hide_banner -loglevel error \\\n";
+            out << "      -fflags +genpts+nobuffer \\\n";
+            out << "      -use_wallclock_as_timestamps 1 \\\n";
+            out << "      -i \"" << safeUrl << "\" \\\n";
+            out << "      -c:v copy -c:a aac -b:a 64k -fflags +genpts+flush_packets \\\n";
+            out << "      -f rtsp -rtsp_transport tcp -pkt_size 1400 rtsp://127.0.0.1:8554/$MTX_PATH &\n";
+            out << "      FFMPEG_PID=$!\n";
+            out << "      wait $FFMPEG_PID\n";
+            out << "      '\n";
+            // POWAŻNA POPRAWKA: ten sam problem i to samo rozwiązanie co w
+            // gałęzi RTSP powyżej - bez tego kamery HTTP też zostawały
+            // martwe po utracie połączenia, aż do ręcznego restartu
+            // serwera.
+            out << "    runOnInitRestart: yes\n";
+
+            out << "    record: yes\n";
+            out << "    recordPath: " << recordPathMTX << "/%Y-%m-%d_%H-%M-%S\n";
             out << "    recordFormat: fmp4\n";
             out << "    recordPartDuration: 100ms\n";
             out << "    recordSegmentDuration: 60s\n";
             out << "    recordDeleteAfter: 360s\n";
             out << "\n";
         }
-        // ========================================================
-        // NIEZNANY TYP
-        // ========================================================
-        else
-        {
-            qWarning()
-            << "Nieznany typ strumienia:"
-            << name
-            << url;
-        }
     }
-    file.close();
-    // ============================================================
-    // KONIEC
-    // ============================================================
-    qDebug()
-        << "MediaMTX: konfiguracja wygenerowana:"
-        << configPath;
+
 }

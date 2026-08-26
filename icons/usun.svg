@@ -1,0 +1,16 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Kosz na śmieci -->
+  <g fill="none" stroke="#0074d9" stroke-width="50" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Pokrywa -->
+    <line x1="260" y1="340" x2="740" y2="340" />
+    <path d="M 420,340 L 440,260 L 560,260 L 580,340" />
+    <!-- Pojemnik -->
+    <path d="M 310,340 L 350,710 A 40,40 0 0 0 390,750 L 610,750 A 40,40 0 0 0 650,710 L 690,340" />
+    <!-- Pionowe linie wewnętrzne -->
+    <line x1="440" y1="440" x2="450" y2="650" stroke-width="44" />
+    <line x1="560" y1="440" x2="550" y2="650" stroke-width="44" />
+  </g>
+</svg>

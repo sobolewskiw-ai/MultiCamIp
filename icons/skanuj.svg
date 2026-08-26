@@ -1,0 +1,22 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Elementy skanera (ramka i linie) -->
+  <g fill="none" stroke="#0074d9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Narożniki ramki celownika (grubość 44) -->
+    <path d="M 360,320 L 280,320 L 280,400" stroke-width="44" />
+    <path d="M 640,320 L 720,320 L 720,400" stroke-width="44" />
+    <path d="M 280,600 L 280,680 L 360,680" stroke-width="44" />
+    <path d="M 720,600 L 720,680 L 640,680" stroke-width="44" />
+    
+    <!-- Pionowe linie symbolizujące kod paskowy (grubość 44) -->
+    <line x1="380" y1="390" x2="380" y2="610" stroke-width="44" />
+    <line x1="460" y1="390" x2="460" y2="610" stroke-width="44" />
+    <line x1="540" y1="390" x2="540" y2="610" stroke-width="44" />
+    <line x1="620" y1="390" x2="620" y2="610" stroke-width="44" />
+    
+    <!-- Pozioma linia lasera skanującego (wyróżniona grubsza linia 54) -->
+    <line x1="240" y1="500" x2="760" y2="500" stroke-width="54" />
+  </g>
+</svg>

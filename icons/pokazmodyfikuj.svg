@@ -1,0 +1,15 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Oko (baza) + Ołówek/Edycja -->
+  <g fill="none" stroke="#0074d9" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Kontur oka przesunięty nieco w dół dla zbalansowania kompozycji -->
+    <path d="M 200,550 C 300,370 600,370 700,550 C 600,730 300,730 200,550 Z" />
+    <circle cx="450" cy="550" r="70" />
+    
+    <!-- Element ołówka w prawym górnym rogu -->
+    <path d="M 620,380 L 740,260 L 790,310 L 670,430 Z" fill="#ffffff" />
+    <line x1="710" y1="290" x2="760" y2="340" />
+  </g>
+</svg>

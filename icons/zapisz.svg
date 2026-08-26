@@ -1,0 +1,14 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Ikona zapisu (dyskietka) -->
+  <g fill="none" stroke="#0074d9" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Główny obrys dyskietki ze ściętym prawym górnym rogiem -->
+    <path d="M 320,280 L 620,280 L 720,380 L 720,720 A 40,40 0 0 1 680,760 L 320,760 A 40,40 0 0 1 280,720 L 280,320 A 40,40 0 0 1 320,280 Z" />
+    <!-- Ruchoma klapka na dole -->
+    <path d="M 400,760 L 400,560 A 20,20 0 0 1 420,540 L 580,540 A 20,20 0 0 1 600,560 L 600,760" />
+    <!-- Okienko opisu na górze -->
+    <path d="M 420,280 L 420,400 L 560,400 L 560,280" />
+  </g>
+</svg>

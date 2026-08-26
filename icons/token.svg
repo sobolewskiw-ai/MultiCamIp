@@ -1,0 +1,21 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Zielone tło z identycznie zaokrąglonymi rogami (styl play.png) -->
+  <rect x="85" y="85" width="830" height="830" rx="195" fill="#52b743" />
+  
+  <!-- Biały symbol tokenu (moneta z gwiazdką/kluczem w środku) -->
+  <g fill="none" stroke="#ffffff" stroke-width="50" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Główny obrys monety -->
+    <circle cx="500" cy="410" r="140" stroke-width="55" />
+    <!-- Detal w środku tokenu (np. gwiazdka / iskierka) -->
+    <path d="M 500,345 L 500,475 M 435,410 L 565,410" stroke-width="45" />
+  </g>
+  
+  <!-- Biały napis na dole, dopasowany proporcjami do napisu "play" -->
+  <text x="500" y="745" 
+        fill="#ffffff" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+        font-size="140" 
+        font-weight="bold" 
+        letter-spacing="-2"
+        text-anchor="middle">token</text>
+</svg>

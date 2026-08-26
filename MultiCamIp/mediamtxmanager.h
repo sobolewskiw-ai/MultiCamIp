@@ -41,11 +41,6 @@ private:
     // Sanityzacja nazwy kamery używanej jako klucz YAML i nazwa katalogu -
     // dopuszcza tylko bezpieczny zestaw znaków.
     static QString sanitizeYamlKey(const QString &input);
-    // Bezpieczne cytowanie dowolnej wartości jako podwójnie cudzysłowiony
-    // łańcuch YAML (escapuje '\' i '"') - używane dla wartości takich jak
-    // "source: <url>", które trafiają bezpośrednio do YAML (nie przez
-    // powłokę), a mogą zawierać znaki specjalne dla YAML.
-    static QString yamlDoubleQuoted(const QString &value);
 
 //    void startMtx();
     MainWindow *mainwindow = nullptr;

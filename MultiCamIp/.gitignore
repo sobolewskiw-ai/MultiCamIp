@@ -1,0 +1,52 @@
+# --- Qt / qmake / Qt Creator ---
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+Makefile*
+*build-*/
+build/
+build-*/
+.qmake.cache
+.qmake.stash
+*.qm
+*.prl
+
+# --- Pliki obiektowe i binarki ---
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.app/
+
+# --- Debug/Release katalogi typowe dla Qt Creator ---
+debug/
+release/
+
+# --- IDE / edytory ---
+.vscode/
+.idea/
+*.user
+*.autosave
+*~
+*.swp
+
+# --- System ---
+.DS_Store
+Thumbs.db
+
+# --- Dane aplikacji (lokalna konfiguracja, nie kod) ---
+# Jeśli plik kamery.dat trafia gdzieś w repo przypadkiem - nie commitujemy
+# danych użytkownika, tylko kod.
+kamery.dat

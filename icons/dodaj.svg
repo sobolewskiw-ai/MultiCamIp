@@ -1,0 +1,10 @@
+<svg xmlns="http://w3.org" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <!-- Tło identyczne jak w ukryj.svg -->
+  <circle cx="500" cy="500" r="435" fill="#ffffff" />
+  
+  <!-- Plus -->
+  <g stroke="#0074d9" stroke-width="54" stroke-linecap="round">
+    <line x1="500" y1="280" x2="500" y2="720" />
+    <line x1="280" y1="500" x2="720" y2="500" />
+  </g>
+</svg>
