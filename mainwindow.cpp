@@ -25,6 +25,8 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QFileDialog>
+#include <QStandardPaths>
+#include <QPointer>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QSettings>
@@ -360,6 +362,12 @@ void MainWindow::setupUi()
     item4->setIcon(QIcon(":/icons/token.svg"));
     item4->setData(Qt::UserRole, "TOKEN");
     menuListSerwer->addItem(item4);
+    //Add item5
+    QListWidgetItem *item5 = new QListWidgetItem("DODAJ IKONĘ DO PULPITU");
+    item5->setFont(itemfont);
+    item5->setIcon(QIcon(":/icons/dodajdopulpitu.png"));
+    item5->setData(Qt::UserRole, "IKONAPULPITU");
+    menuListSerwer->addItem(item5);
 
     layoutSerwer->addWidget(menuListSerwer);
     menuListSerwer->setFocus();
@@ -538,17 +546,76 @@ void MainWindow::setupUi()
                 QString adres = table->item(row, 2) ? table->item(row, 2)->text() : QString();
                 if (adres.isEmpty()) continue;
 
+                // POWAŻNA POPRAWKA (use-after-free / crash - głównie w
+                // sieci zdalnej): "table" to surowy wskaźnik składowy
+                // MainWindow, będący dzieckiem dialogu utworzonego z
+                // Qt::WA_DeleteOnClose. Sprawdzenie połączenia
+                // (waitForConnected) trwa do 4 sekund NA WĄTKU TŁA - jeśli
+                // w tym czasie użytkownik zamknie dialog (np. przyciskiem
+                // Anuluj), "table" zostaje zniszczone, ZANIM wątek tła
+                // skończy czekać. Przekazanie wtedy tego już-zwisającego
+                // wskaźnika do QMetaObject::invokeMethod(table, ...) samo w
+                // sobie jest użyciem zwolnionej pamięci. Błąd ujawniał się
+                // głównie w sieci zdalnej (wolniejsze połączenia TCP =
+                // większe okno czasowe na ten wyścig) i tylko "co któryś
+                // raz" - potwierdzone i przetestowane wcześniej.
+                //
+                // QPointer<QTableWidget> automatycznie zeruje się, gdy
+                // wskazywany obiekt zostanie zniszczony. Kontekstem
+                // invokeMethod jest `this` (MainWindow) - obiekt żyjący
+                // przez cały czas działania aplikacji, a NIE `table`,
+                // które mogłoby już nie istnieć.
+                QPointer<QTableWidget> tableGuard(table);
+
                 // Sprawdzamy w tle żeby nie blokować GUI przy niedostępnych hostach
-                // (waitForConnected(1000) blokuje wątek przez 1s per serwer)
-                QThreadPool::globalInstance()->start([this, row, adres](){
+                // POPRAWKA (fałszywe "Offline" dla hostname'ów wymagających
+                // DNS, np. dynamiczne DNS typu "sobol.duckdns.org"):
+                // waitForConnected() obejmuje ZARÓWNO rozwiązanie nazwy DNS,
+                // JAK I sam handshake TCP - to nie jest tylko czas
+                // połączenia. Dla hostname'u (w odróżnieniu od gołego IP)
+                // samo zapytanie DNS (zwłaszcza gdy nie jest jeszcze w
+                // lokalnym cache, co jest typowe dla usług dynamicznego DNS)
+                // potrafi zająć kilkaset ms, zostawiając za mało czasu na
+                // resztę w budżecie 1000ms - serwer bywał więc błędnie
+                // pokazywany jako Offline mimo że faktycznie działał.
+                // Zwiększamy do 4000ms; to i tak działa w tle (osobny wątek
+                // z puli), więc nie blokuje GUI ani pozostałych sprawdzeń.
+                QThreadPool::globalInstance()->start([this, row, adres, tableGuard](){
                     QTcpSocket socket;
                     socket.connectToHost(adres, 8554);
-                    bool online = socket.waitForConnected(1000);
+                    bool online = socket.waitForConnected(4000);
+                    // POPRAWKA (diagnostyka): sam wynik true/false nic nie
+                    // mówi DLACZEGO połączenie się nie udało - a przyczyn
+                    // może być kilka zupełnie różnych (błędny DNS, port
+                    // zablokowany/niezaporwardowany, "hairpin NAT" - typowy
+                    // problem domowych routerów, gdzie własny publiczny
+                    // adres/DDNS nie jest osiągalny z tej samej sieci
+                    // lokalnej mimo że z zewnątrz działa poprawnie, albo
+                    // faktyczny brak usługi). Logujemy kod błędu Qt oraz
+                    // (dla hostname'ów) czy DNS w ogóle się rozwiązuje, żeby
+                    // dało się to precyzyjnie zdiagnozować zamiast zgadywać.
+                    if (!online) {
+                        qDebug() << "sprawdzSerwery: BRAK POŁĄCZENIA z" << adres
+                                 << "błąd Qt:" << socket.error()
+                                 << socket.errorString();
+                        QHostInfo info = QHostInfo::fromName(adres);
+                        if (info.error() != QHostInfo::NoError) {
+                            qDebug() << "sprawdzSerwery: DNS NIE ROZWIĄZUJE SIĘ dla"
+                                     << adres << "-" << info.errorString();
+                        } else {
+                            qDebug() << "sprawdzSerwery: DNS OK dla" << adres
+                                     << "-> adresy IP:" << info.addresses();
+                        }
+                    }
                     socket.disconnectFromHost();
+                    if (!tableGuard)
+                        return; // dialog (i table) już nie istnieje
                     // Aktualizacja UI musi być na głównym wątku
-                    QMetaObject::invokeMethod(table, [this, row, online](){
-                        if (row < table->rowCount() && table->item(row, 3))
-                            table->item(row, 3)->setText(online ? "🟢 Online" : "🔴 Offline");
+                    QMetaObject::invokeMethod(this, [tableGuard, row, online](){
+                        if (!tableGuard)
+                            return;
+                        if (row < tableGuard->rowCount() && tableGuard->item(row, 3))
+                            tableGuard->item(row, 3)->setText(online ? "🟢 Online" : "🔴 Offline");
                     }, Qt::QueuedConnection);
                 });
             }
@@ -899,10 +966,11 @@ void MainWindow::setupUi()
             qDebug()<< "btnRozlacz test 6";
         });
         connect(btnAnuluj,&QPushButton::clicked, dialog,&QDialog::close);
-            qDebug()<< "btnAnuluj powoduje linia1";
-            dialog->show();
-            qDebug()<< "btnAnuluj powoduje linia2";
-        });
+
+        qDebug()<< "btnAnuluj powoduje linia1";
+        dialog->show();
+        qDebug()<< "btnAnuluj powoduje linia2";
+    });
 
     QGroupBox *groupBox = new QGroupBox("widok okna liveStream",drawerWidgetPodglad);
     groupBox->setAlignment(Qt::AlignCenter);
@@ -1583,6 +1651,9 @@ void MainWindow::createWidgetListaLivekamery()
                     QMessageBox::information(nullptr,"INFO",
                         QString("Ta kamera nie odtwarza (okna: %1, kamera: %2)")
                             .arg(labelVideoVector.size()).arg(nrKamery+1));
+                    return;
+                }
+                if(nrKamery >= playerVector.size()){
                     return;
                 }
                 // Zatrzymujemy odtwarzanie
@@ -2789,6 +2860,76 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
                 });
             }
         });
+    }else if(item->data(Qt::UserRole).toString() == "IKONAPULPITU"){
+        QString iconPath = appHomePath + "/MultiCamIp.png";
+        if (!QFile::exists(iconPath)) {
+            if (!QFile::copy(":/icons/camera.png", iconPath))
+                qWarning() << "Nie udało się skopiować ikony do" << iconPath;
+        }
+        QString aplicationPath = QCoreApplication::applicationFilePath();
+        QFileInfo fileInfo(aplicationPath);
+        QString nazwaPliku = fileInfo.baseName();
+        nazwaPliku.append(".desktop");
+        nazwaPliku.prepend("/");
+        qDebug() << nazwaPliku;
+        // DROBNA POPRAWKA: QStandardPaths::writableLocation() może w
+        // rzadkich przypadkach (np. system bez skonfigurowanych
+        // katalogów xdg-user-dirs) zwrócić pusty string - bez tego
+        // sprawdzenia plik trafiłby do "/MultiCamIp.desktop" (katalog
+        // główny systemu plików) zamiast normalnie się nie udać z
+        // czytelnym komunikatem.
+        QString desktopDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        if (desktopDir.isEmpty()) {
+            QMessageBox::warning(this, "UWAGA",
+                "Nie udało się ustalić katalogu Pulpitu w tym systemie.\n"
+                "Skrót nie został utworzony.");
+            return;
+        }
+        QString desktopPath = desktopDir + nazwaPliku;  //"/MultiCamIp.desktop";
+        if (QFile::exists(desktopPath)) {
+            QFile::remove(desktopPath);
+        }
+        QFile file(desktopPath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QMessageBox::warning(this, "UWAGA",
+                "Nie udało się zapisać skrótu:\n" + desktopPath);
+            return;
+        }
+        QTextStream DesktopIkon(&file);
+        DesktopIkon << "[Desktop Entry]\n";
+        DesktopIkon << "Type=Application\n";
+        DesktopIkon << "Name=MultiCamIp\n";
+        DesktopIkon << "Comment=Uruchamia aplikację CameraSerwer\n";
+        DesktopIkon << "Exec=" <<aplicationPath <<"\n";
+        //DesktopIkon << "Icon=/home/sobolewski/projekt/MultiCamIp.png\n";
+        DesktopIkon << "Icon=" << iconPath << "\n";
+        DesktopIkon << "Terminal=false\n";
+        DesktopIkon << "Categories=Utility;Video;Camera;\n";
+        DesktopIkon << "StartupWMClass=MultiCamIp\n";
+        file.close();
+        file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+                            QFileDevice::ReadGroup | QFileDevice::ExeGroup |
+                            QFileDevice::ReadOther | QFileDevice::ExeOther);
+
+        QString menuDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/applications";
+        QString menuPath = menuDir + nazwaPliku;  //"/multicamip.desktop";
+        QDir().mkpath(menuDir);
+        if (QFile::exists(menuPath)) {
+            QFile::remove(menuPath);
+        }
+        if (QFile::copy(desktopPath, menuPath)) {
+            QFile menuFile(menuPath);
+            menuFile.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+                                    QFileDevice::ReadGroup | QFileDevice::ExeGroup |
+                                    QFileDevice::ReadOther | QFileDevice::ExeOther);
+        }
+
+        #if defined(Q_OS_LINUX)
+        QProcess::startDetached("gio", QStringList() << "set" << "-t" << "string" << desktopPath << "metadata::trusted" << "true");
+        #endif
+
+        QMessageBox::information(this, "OK",
+            "Skrót do pulpitu utworzony:\n" + desktopPath);
     }
 }
 
