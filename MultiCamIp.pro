@@ -11,14 +11,18 @@ SOURCES += \
     httpserwer.cpp \
     main.cpp \
     mainwindow.cpp \
-    mediamtxmanager.cpp
+    mediamtxmanager.cpp \
+    clickableslabel.cpp \
+    motiondetector.cpp
 
 HEADERS += \
     ffmpegplayer.h \
     findnewcamera.h \
     httpserwer.h \
     mainwindow.h \
-    mediamtxmanager.h
+    mediamtxmanager.h \
+    clickableslabel.h \
+    motiondetector.h
 
 #Dynamiczne opencv2
 unix:!macx: LIBS += -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lopencv_calib3d

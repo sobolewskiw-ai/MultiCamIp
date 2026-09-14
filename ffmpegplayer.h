@@ -72,6 +72,10 @@ signals:
     void playbackStopped();
     void reconnecting(int attempt);   // emitowany przy każdej próbie reconnect
     void error(const QString &message);
+    // Emitowany dla KAŻDEJ odebranej klatki, obok normalnego wyświetlenia
+    // jej na targetLabel - pozwala podłączyć niezależną analizę obrazu
+    // (np. MotionDetector) bez ingerencji w logikę wyświetlania.
+    void frameAvailable(const QImage &frame);
 
 private slots:
     void onFrameReady(const QImage &frame);

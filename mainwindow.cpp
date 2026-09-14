@@ -3,6 +3,8 @@
 #include "httpserwer.h"
 #include "mediamtxmanager.h"
 #include "ffmpegplayer.h"
+#include "clickableslabel.h"
+#include "motiondetector.h"
 #include <QDebug>
 #include <QToolBar>
 #include <QToolButton>
@@ -12,6 +14,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QPainter>
+#include <QPen>
 #include <QMouseEvent>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -26,6 +29,7 @@
 #include <QSpinBox>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <memory>
 #include <QPointer>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -223,6 +227,11 @@ MainWindow::~MainWindow() {
         if (player) player->stop();
     }
     playerVector.clear();
+
+    if(playerek){
+        playerek->stop();
+        playerek = nullptr;
+    }
 
     if (mtx) {
         disconnect(mtx, nullptr, this, nullptr);
@@ -2119,6 +2128,341 @@ void MainWindow::createWidgetUstawienia()
             }
         }
     });
+    connect(strefyRuchu, &QPushButton::clicked, widget, [this,widget,table,labelBorderStyleSheet](){
+        QWidget *widgetStrefy = new QWidget(widget);
+    //    widgetStrefy->setAttribute(Qt::WA_DeleteOnClose);
+        widgetStrefy->setWindowTitle("STREFY RUCHU");
+        widgetStrefy->setGeometry(0,0,this->width(),this->height());
+        widgetStrefy->setStyleSheet("background-color: white;");
+        widgetStrefy->show();
+
+        QVBoxLayout *layoutCentral = new QVBoxLayout(widgetStrefy);
+        QLabel *labelTitle = new QLabel("USTAWIENIA\nSTREF RUCHU",widgetStrefy);
+        labelTitle->setStyleSheet(stylesheetLabelSelectedBlue);
+        labelTitle->setAlignment(Qt::AlignCenter);
+        labelTitle->setFixedHeight(100);
+        QHBoxLayout *layouth0 = new QHBoxLayout();
+        QLabel *labelInfo = new QLabel(widgetStrefy);
+        labelInfo->setStyleSheet( R"(QLabel{
+            border: 4px solid #0078D7;
+                background-color: white;
+            }
+        )");
+        labelInfo->setAlignment(Qt::AlignCenter);
+        labelInfo->setFixedWidth(this->width()/4);
+        QFont font = labelInfo->font();
+        font.setPointSize(24);
+        font.setBold(false);
+        labelInfo->setFont(font);
+    //    QLabel *labelPlay = new QLabel(widgetStrefy);
+        ClickableLabel *labelPlay = new ClickableLabel(widgetStrefy);
+        labelPlay->setStyleSheet( R"(QLabel{
+            border: 4px solid #0078D7;
+                background-color: black;
+            }
+        )");
+        labelPlay->setAlignment(Qt::AlignCenter);
+        layouth0->addWidget(labelInfo,1);
+        layouth0->addWidget(labelPlay,3);
+        QTableWidget *tabela = new QTableWidget(widgetStrefy);
+        tabela->verticalHeader()->setVisible(false);
+        tabela->setColumnCount(7);
+        tabela->setHorizontalHeaderLabels(
+            {"L.p.","Nazwa", "Kamera Id", "x","ax","y","ay"}
+            );
+        tabela->horizontalHeader()->setVisible(true);
+        tabela->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tabela->setSelectionMode(QAbstractItemView::SingleSelection);
+        tabela->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tabela->setAlternatingRowColors(true);
+        tabela->setShowGrid(true);
+        tabela->setFixedHeight(this->height()/4);
+        QHeaderView *header = tabela->horizontalHeader();
+        header->setFixedHeight(40);
+        header->setDefaultAlignment(Qt::AlignCenter);
+        header->setStyleSheet(
+            "QHeaderView::section{"
+            "background:#BDE8FF;"
+            "color:#003366;"
+            "font-weight:bold;"
+            "font-size:20px;"
+            "border:1px solid #8EC7E8;"
+            "padding:6px;"
+            "}"
+            );
+        for(int x = 0; x < tabela->columnCount(); x++){
+            header->setSectionResizeMode(x,QHeaderView::Stretch);
+        }
+        QHBoxLayout *layouth1 = new QHBoxLayout();
+        QPushButton *btnZapisz = new QPushButton("ZAPISZ", widgetStrefy);
+        btnZapisz->setStyleSheet(stylesheetPushButton);
+        btnZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
+        btnZapisz->setIconSize(QSize(40,40));
+        QPushButton *btnUsun = new QPushButton("USUŃ", widgetStrefy);
+        btnUsun->setStyleSheet(stylesheetPushButtonRed);
+        btnUsun->setIcon(QIcon(":/icons/usun.svg"));
+        btnUsun->setIconSize(QSize(40,40));
+        QPushButton *btnAnuluj = new QPushButton("ANULUJ", widgetStrefy);
+        btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
+        btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
+        btnAnuluj->setIconSize(QSize(40,40));
+        layouth1->addWidget(btnZapisz);
+        layouth1->addWidget(btnUsun);
+        layouth1->addStretch(0);
+        layouth1->addWidget(btnAnuluj);
+
+        layoutCentral->addWidget(labelTitle);
+        layoutCentral->addLayout(layouth0);
+        layoutCentral->addWidget(tabela);
+        layoutCentral->addLayout(layouth1);
+
+        QString adresmtx = adreshttp;
+        int row = table->currentRow();
+        QString kameraId = table->item(row,0) ?table->item(row,0)->text():QString();
+        QString kamera = table->item(row,1) ?table->item(row,1)->text():QString();
+        adresmtx.prepend("rtsp://");
+        adresmtx.append(":8554/");
+        adresmtx.append(kamera);
+        qDebug()<<"adresmtx"<< adresmtx;
+
+        auto [ok, resolution, fps] = ffprobeTest(adresmtx);
+        if(!ok){
+            QMessageBox::information(nullptr,"INFO","SPRAWDŹ:\n- POPRAWNOŚĆ STRUMIENIA\n- ŁĄCZNOŚĆ Z KAMERĄ");
+            return;
+        }
+
+        if(!playerek){
+            playerek = new FfmpegPlayer(widgetStrefy);
+        }
+        playerek->setLabel(labelPlay);
+        playerek->setUrl(adresmtx);
+        playerek->setAspectRatioMode(Qt::KeepAspectRatio);
+        playerek->play();
+
+        // DETEKCJA RUCHU (podgląd "REC" do testowania stref wolnych):
+        // nowa instancja MotionDetector za każdym razem, gdy dialog jest
+        // otwierany - żeby model tła zaczynał od zera dla nowej sesji
+        // podglądu (poprzednia kamera mogła mieć zupełnie inne tło).
+        // std::shared_ptr, bo lambda musi go bezpiecznie przechowywać
+        // przez cały czas życia połączenia (poza zasięgiem tej funkcji).
+        //
+        // Próg wielkości obiektu bierzemy z pola "CZUŁOŚĆ DETEKCJI"
+        // (spinBoxCzulosc, zakres 1000-100000, zapisane w kolumnie 7
+        // głównej tabeli kamer) - to samo ustawienie, które użytkownik
+        // konfiguruje przy dodawaniu/edycji kamery, więc nie trzeba
+        // osobnego pola tylko dla tego podglądu.
+        //
+        // POPRAWKA (porównywalność między kamerami o różnej rozdzielczości):
+        // MotionDetector liczy próg jako PROCENT powierzchni kadru, a nie
+        // bezwzględną liczbę pikseli - inaczej kamera o wyższej
+        // rozdzielczości byłaby wielokrotnie czulsza dla tego samego
+        // fizycznego obiektu (np. 1000px przy 640x360 to ~0.43% kadru, ale
+        // przy 1920x1080 to tylko ~0.048% kadru - prawie 9x mniej). Mapujemy
+        // zakres spinBoxCzulosc (1000-100000) na procent kadru dzieląc przez
+        // 10000: 1000 -> 0.1% (bardzo czułe), 10000 (domyślne) -> 1%,
+        // 100000 -> 10% (mało czułe, tylko duże obiekty).
+        //
+        // UWAGA: WIĘKSZA wartość w spinBoxCzulosc = MNIEJ czuła detekcja
+        // (większy obiekt potrzebny, żeby wyzwolić alarm). Jeśli to
+        // nieintuicyjne, zamień poniższą linię na:
+        //   double procentKadru = 10.1 - (czulosc / 10000.0);
+        // żeby odwrócić kierunek (większa wartość = bardziej czułe).
+        double procentKadru = 1.0; // domyślne 1%, gdyby coś poszło nie tak
+        if (table->item(row, 7)) {
+            bool czuloscOk = false;
+            int czulosc = table->item(row, 7)->text().toInt(&czuloscOk);
+            if (czuloscOk && czulosc > 0)
+                procentKadru = czulosc / 10000.0;
+        }
+        auto motionDetector = std::make_shared<MotionDetector>(procentKadru);
+        connect(playerek, &FfmpegPlayer::frameAvailable, widgetStrefy,
+                [labelPlay, tabela, motionDetector](const QImage &frame){
+            // Strefy wolne CZYTANE NA BIEŻĄCO z tabeli (nie z pliku) - dzięki
+            // temu podgląd REC reaguje natychmiast na dodawanie/usuwanie
+            // stref myszką, jeszcze przed kliknięciem ZAPISZ.
+            QVector<QRect> strefyWolne;
+            for (int row = 0; row < tabela->rowCount(); ++row) {
+                if (!tabela->item(row,3) || !tabela->item(row,4) ||
+                    !tabela->item(row,5) || !tabela->item(row,6)) continue;
+                int x  = tabela->item(row,3)->text().toInt();
+                int ax = tabela->item(row,4)->text().toInt();
+                int y  = tabela->item(row,5)->text().toInt();
+                int ay = tabela->item(row,6)->text().toInt();
+                strefyWolne.append(QRect(x, y, ax, ay));
+            }
+            bool ruch = motionDetector->processFrame(frame, strefyWolne);
+            labelPlay->setMotionActive(ruch);
+        });
+
+
+
+        QList listfps = fps.split("/");
+        QList listresolution = resolution.split("x");
+        // POPRAWKA (odczyt poza zakresem / crash): ffprobe dla niektórych
+        // strumieni (zwłaszcza kamer MJPEG/HTTP o zmiennej liczbie klatek -
+        // dokładnie takich, jakie obsługuje ta aplikacja) potrafi zwrócić
+        // r_frame_rate jako "N/A" zamiast oczekiwanego formatu "N/D" - w
+        // takim wypadku listfps miałoby tylko 1 element, a listfps[1]
+        // byłoby odczytem poza zakresem (crash). "resolution" jest wprawdzie
+        // budowane przez samą aplikację (gwarantowane "x"), ale sprawdzamy
+        // oba na wszelki wypadek, zamiast zakładać konkretny format
+        // zewnętrznego narzędzia.
+        if (listfps.size() < 2 || listresolution.size() < 2) {
+            QMessageBox::information(nullptr,"INFO",
+                "Nie udało się odczytać parametrów strumienia (fps/rozdzielczość).\n"
+                "Spróbuj ponownie za chwilę.");
+            return;
+        }
+        QSize videoResolution(listresolution[0].toInt(), listresolution[1].toInt());
+        double fpsDouble = listfps[0].toDouble()/listfps[1].toDouble();
+        labelInfo->setText(QString("resolution:\n%1\n\nfps/s\n%2").arg(resolution).arg(fpsDouble));
+        qDebug() << ok<< videoResolution << resolution << fpsDouble;
+
+        connect(this, &MainWindow::sygnalResize,widgetStrefy,[this,tabela,widgetStrefy,labelInfo](){
+            widgetStrefy->setGeometry(0,0,this->width(),this->height());
+            labelInfo->setFixedWidth(this->width()/4);
+            tabela->setFixedHeight(this->height()/4);
+        });
+        connect(btnZapisz, &QPushButton::clicked, widgetStrefy, [this,tabela,table](){
+            if (!ItemModel) {
+                qDebug() << "Brak ItemModel";
+                return;
+            }
+            int wiersz = table->currentRow();
+            QString nazwa = table->item(wiersz, 1)
+                                ?table->item(wiersz, 1)->text()
+                                :QString();
+            for (int row = ItemModel->rowCount() - 1; row >= 0; --row) {
+                QModelIndex index = ItemModel->index(row, 1); // Indeks: wiersz 'row', kolumna 1
+
+                if (index.data().toString() == nazwa) {
+                    ItemModel->removeRow(row);
+                }
+            }
+            qDebug() << ItemModel->rowCount();
+
+            for(int row = 0; row < tabela->rowCount(); row++){
+                int nowyWierszIndeks = ItemModel->rowCount();
+                ItemModel->insertRow(nowyWierszIndeks);
+                for(int col = 0; col < tabela->columnCount(); col++){
+                    QString text = tabela->item(row,col)
+                                   ?tabela->item(row,col)->text()
+                                   :QString();
+                    qDebug() << text;
+                    QStandardItem *item = new QStandardItem(text);
+                    ItemModel->setItem(nowyWierszIndeks, col, item);
+                }
+            }
+            QString adres = adreshttp;
+            adres.prepend("http://");
+            adres.append(":8080/strefa.dat");
+
+            bool ok = zapiszKameryDat(adres);
+            if(ok){
+                QMessageBox::information(nullptr,"INFO","STREFY ZAPISANE PRAWIDŁOWO");
+            }else {
+                QMessageBox::information(nullptr,"UWAGA","STREFY NIE ZAPISANE");
+            }
+        });
+        connect(btnUsun, &QPushButton::clicked, widgetStrefy, [this,tabela,labelPlay,videoResolution](){
+            int row = tabela->currentRow();
+            tabela->removeRow(row);
+            for(int x = 0; x < tabela->rowCount(); x++){
+                QTableWidgetItem *item = new QTableWidgetItem(QString::number(x));
+                item->setTextAlignment(Qt::AlignCenter);
+                tabela->setItem(x,0, item);
+            }
+            odswiezStrefyRuchu(tabela,labelPlay, videoResolution);
+        });
+        connect(btnAnuluj, &QPushButton::clicked, widgetStrefy,[this,widgetStrefy](){
+            if(playerek){
+            playerek->stop();
+            playerek = nullptr;
+            }
+            widgetStrefy->close();
+            widgetStrefy->deleteLater();
+        });
+        connect(labelPlay, &ClickableLabel::selectionFinished, widgetStrefy, [this,videoResolution,kameraId,tabela,kamera,labelPlay](const QRect &rect){
+
+            QSize rozmiarWideo = videoResolution;
+            QSize rozmiarLabela = labelPlay->size();
+            // Przeliczamy lewy górny i prawy dolny róg prostokąta
+            QPoint wideoTopLeft = przeliczMyszNaWideo(rect.topLeft(), rozmiarLabela, rozmiarWideo);
+            QPoint wideoBottomRight = przeliczMyszNaWideo(rect.bottomRight(), rozmiarLabela, rozmiarWideo);
+            // Tworzymy finalny prostokąt w rozdzielczości kamery
+            QRect strefaWideo(wideoTopLeft, wideoBottomRight);
+            qDebug() << "Rzeczywiste współrzędne dla serwera kamer:";
+            qDebug() << "X:" << strefaWideo.x()
+                     << "Y:" << strefaWideo.y()
+                     << "Szerokość:" << strefaWideo.width()
+                     << "Wysokość:" << strefaWideo.height();
+            int x = strefaWideo.x();
+            int ax = strefaWideo.width();
+            int y = strefaWideo.y();
+            int ay = strefaWideo.height();
+            if(ax == 1 || ay == 1) return;
+
+            int row = tabela->rowCount();
+            tabela->insertRow(row);
+            QTableWidgetItem *itemLp = new QTableWidgetItem(QString::number(row));
+            itemLp->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemKamera = new QTableWidgetItem(kamera);
+            itemKamera->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemKameraId = new QTableWidgetItem(kameraId);
+            itemKameraId->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemX = new QTableWidgetItem(QString::number(x));
+            itemX->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemAX = new QTableWidgetItem(QString::number(ax));
+            itemAX->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemY = new QTableWidgetItem(QString::number(y));
+            itemY->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *itemAY = new QTableWidgetItem(QString::number(ay));
+            itemAY->setTextAlignment(Qt::AlignCenter);
+            tabela->setItem(row,0, itemLp);
+            tabela->setItem(row,1, itemKamera);
+            tabela->setItem(row,2, itemKameraId);
+            tabela->setItem(row,3, itemX);
+            tabela->setItem(row,4, itemAX);
+            tabela->setItem(row,5, itemY);
+            tabela->setItem(row,6, itemAY);
+
+            odswiezStrefyRuchu(tabela,labelPlay, rozmiarWideo);
+        });
+        int wiersz = table->currentRow();
+        QString nazwa = table->item(wiersz, 1)
+                        ?table->item(wiersz, 1)->text()
+                        :QString();
+        QString adres = adreshttp;
+        adres.prepend("http://");
+        adres.append(":8080/strefa.dat");
+        ItemModel->clear();
+        bool tak = czytajKameryDat(adres);
+        if(tak){
+            if (ItemModel && ItemModel->rowCount() > 0) {
+                for(int row = 0; row < ItemModel->rowCount(); row++){
+                        QString nazwa2 = ItemModel->item(row, 1)
+                        ?ItemModel->item(row,1)->text()
+                        :QString();
+                    if(nazwa == nazwa2){
+                        int nextRow = tabela->rowCount();
+                        tabela->insertRow(nextRow);
+                        for(int col = 0; col < ItemModel->columnCount(); col++){
+                            QString text = ItemModel->item(row, col)
+                                ?ItemModel->item(row,col)->text()
+                                :QString();
+                                QTableWidgetItem *item = new QTableWidgetItem(text);
+                            item->setTextAlignment(Qt::AlignCenter);
+                            tabela->setItem(nextRow, col, item);
+                        }
+                    }
+                }
+            }
+            odswiezStrefyRuchu(tabela,labelPlay, videoResolution);
+            tabela->selectRow(0);
+            tabela->setFocus();
+        }
+    });
+
     connect(btnUsun, &QPushButton::clicked, widget, [table](){
         int row = table->currentRow();
         table->removeRow(row);
@@ -2127,6 +2471,7 @@ void MainWindow::createWidgetUstawienia()
             item->setTextAlignment(Qt::AlignCenter);
             table->setItem(x,0, item);
         }
+
     });
     connect(btnAnuluj, &QPushButton::clicked, widget, [stack](){
         stack->close();
@@ -2395,6 +2740,37 @@ qDebug()<<"6";
     });
 }
 
+void MainWindow::odswiezStrefyRuchu(QTableWidget *tabl, ClickableLabel *labelPlay, QSize size)
+{
+    QVector<ClickableLabel::strefaLinia> listaDoWyswietlenia;
+    labelPlay->videoSize = size;
+
+    for (int row = 0; row < tabl->rowCount(); ++row) {
+        // POPRAWKA (null-deref): warunek pomijał sprawdzenie kolumny 6
+        // ("ay"), mimo że jest ona używana bez zabezpieczenia dwie linie
+        // niżej (tabl->item(row, 6)->text()...) - dla wiersza z brakującym
+        // elementem w tej kolumnie (np. częściowo uszkodzony/ręcznie
+        // edytowany wpis w strefa.dat) był to null pointer dereference.
+        if (!tabl->item(row, 0) || !tabl->item(row, 2) || !tabl->item(row, 3) ||
+            !tabl->item(row, 4) || !tabl->item(row, 5) || !tabl->item(row, 6)) continue;
+
+        int id = tabl->item(row, 0)->text().toInt();
+        int x  = tabl->item(row, 3)->text().toInt();
+        int ax = tabl->item(row, 4)->text().toInt();
+        int y  = tabl->item(row, 5)->text().toInt();
+        int ay = tabl->item(row, 6)->text().toInt();
+
+        ClickableLabel::strefaLinia sw;
+        sw.rect = QRect(x, y, ax, ay); // Oryginalne wymiary wprost z tabeli
+        sw.id = id;
+        //sw.videoSize = size;
+        listaDoWyswietlenia.append(sw);
+    }
+
+    // Przekazanie danych do labela w celu narysowania
+    labelPlay->ustawStrefy(listaDoWyswietlenia);
+}
+
 std::tuple<bool, QString, QString> MainWindow::ffprobeTest(const QString &rtspUrl)
 {
     // DROBNA POPRAWKA (spójność): "-rtsp_transport" jest opcją tylko
@@ -2642,6 +3018,45 @@ bool MainWindow::zapiszKameryDat(const QString &adres)
     return true;
 }
 
+QPoint MainWindow::przeliczMyszNaWideo(QPoint punktMyszy, QSize rozmiarLabela, QSize rozmiarWideo)
+{
+    double wideoW = rozmiarWideo.width();
+    double wideoH = rozmiarWideo.height();
+    double labelW = rozmiarLabela.width();
+    double labelH = rozmiarLabela.height();
+
+    // POPRAWKA (dzielenie przez zero / NaN -> UB): jeśli rozdzielczość
+    // wideo albo rozmiar labela jest zerowy (degenerowany QSize, np.
+    // ffprobe zwróciło "0x0" albo widget jeszcze nie ma realnego rozmiaru),
+    // "labelW / wideoW" dla double daje +inf, a "wideoW * skala" zaraz
+    // potem daje NaN - rzutowanie NaN na int jest zachowaniem
+    // niezdefiniowanym w C++. Zwracamy (0,0) zamiast liczyć na
+    // niezdefiniowanych wartościach.
+    if (wideoW <= 0.0 || wideoH <= 0.0 || labelW <= 0.0 || labelH <= 0.0)
+        return QPoint(0, 0);
+
+    // 1. Oblicz współczynnik skalowania (zgodnie z Qt::KeepAspectRatio)
+    double skala = std::min(labelW / wideoW, labelH / wideoH);
+
+    // 2. Oblicz rzeczywisty rozmiar wyświetlanego obrazu w QLabel
+    double wyswietlanaSzerokosc = wideoW * skala;
+    double wyswietlanaWysokosc = wideoH * skala;
+
+    // 3. Oblicz szerokość czarnych pasów (offset / przesunięcie obrazu)
+    double offsetX = (labelW - wyswietlanaSzerokosc) / 2.0;
+    double offsetY = (labelH - wyswietlanaWysokosc) / 2.0;
+
+    // 4. Przeliczenie współrzędnych myszy (odjęcie pasów i cofnięcie skali)
+    int wideoX = static_cast<int>((punktMyszy.x() - offsetX) / skala);
+    int wideoY = static_cast<int>((punktMyszy.y() - offsetY) / skala);
+
+    // 5. Zabezpieczenie przed kliknięciem na czarnych pasach poza wideo
+    wideoX = std::clamp(wideoX, 0, rozmiarWideo.width() -1);
+    wideoY = std::clamp(wideoY, 0, rozmiarWideo.height() -1);
+
+    return QPoint(wideoX, wideoY);
+}
+
 QIcon MainWindow::createGridIcon(int rows, int cols)
 {
     const int size = 32;
@@ -2866,12 +3281,24 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
             if (!QFile::copy(":/icons/camera.png", iconPath))
                 qWarning() << "Nie udało się skopiować ikony do" << iconPath;
         }
-        QString aplicationPath = QCoreApplication::applicationFilePath();
+    //    QString aplicationPath = QCoreApplication::applicationFilePath();
+        QString aplicationPath;
+    #ifdef Q_OS_LINUX
+        // Jeżeli program został uruchomiony jako AppImage,
+        // APPIMAGE wskazuje na właściwy plik AppImage.
+        aplicationPath = qEnvironmentVariable("APPIMAGE");
+    #endif
+
+        // Jeżeli nie jest to AppImage, używamy normalnej ścieżki programu.
+        if (aplicationPath.isEmpty()) {
+            aplicationPath = QCoreApplication::applicationFilePath();
+        }
+
         QFileInfo fileInfo(aplicationPath);
         QString nazwaPliku = fileInfo.baseName();
         nazwaPliku.append(".desktop");
         nazwaPliku.prepend("/");
-        qDebug() << nazwaPliku;
+        qDebug() << nazwaPliku << aplicationPath;
         // DROBNA POPRAWKA: QStandardPaths::writableLocation() może w
         // rzadkich przypadkach (np. system bez skonfigurowanych
         // katalogów xdg-user-dirs) zwrócić pusty string - bez tego

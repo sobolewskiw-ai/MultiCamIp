@@ -18,6 +18,7 @@
 class MediaMTXManager;
 class HttpSerwer;
 class FfmpegPlayer;
+class ClickableLabel;
 
 class MainWindow : public QMainWindow
 {
@@ -31,6 +32,7 @@ public:
     ~MainWindow() override;
     bool czytajKameryDat(const QString &adres);
     bool zapiszKameryDat(const QString &adres);
+    QPoint przeliczMyszNaWideo(QPoint punktMyszy, QSize rozmiarLabela, QSize rozmiarWideo);
     QStandardItemModel *ItemModel = nullptr;
     QStandardItemModel *ItemModelSerweryDat = nullptr;
     QString appHomePath;
@@ -56,6 +58,7 @@ private:
     void czytajSerweryDat();
     void createWidgetListaLivekamery();
     void createWidgetUstawienia();
+    void odswiezStrefyRuchu(QTableWidget *tabl, ClickableLabel *labelPlay,QSize size);
     bool statusUkrytySerwer = true;
     bool statusUkrytyPodglad = true;
     bool statusUkrytyNagrania = true;

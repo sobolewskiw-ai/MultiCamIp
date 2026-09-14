@@ -729,4 +729,5 @@ void FfmpegPlayer::onFrameReady(const QImage &frame)
         Qt::SmoothTransformation
     );
     targetLabel->setPixmap(pix);
+    emit frameAvailable(frame);
 }
