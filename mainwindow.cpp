@@ -172,7 +172,8 @@ QComboBox {
     border-radius: 6px;
     padding: 5px 10px;
     font-size: 18px;
-    selection-background-color: #BDE8FF;
+    selection-background-color: #0078D7;
+    selection-color: white;
 }
 
 QComboBox::drop-down {
@@ -1103,6 +1104,46 @@ void MainWindow::setupUi()
     group->addAction(toggleActionSerwer);
     group->addAction(toggleActionPodglad);
     group->addAction(toggleActionNagrania);
+
+// MENU LANGUAGE
+    QLabel *labelLanguage = new QLabel("☰ JĘZYK: ", this);
+    if(labelLanguage){
+        labelLanguage->setFont(font);
+        labelLanguage->setPalette(pal);
+    }
+    QComboBox *comboBoxLanguage = new QComboBox(this);
+    comboBoxLanguage->setStyleSheet(stylesheetComboBox);
+    comboBoxLanguage->addItem("Polski", "pl");
+    comboBoxLanguage->addItem("English", "en");
+    comboBoxLanguage->addItem("Deutsch", "de");
+    comboBoxLanguage->addItem("Español", "es");
+    QSettings settings("MojaFirma", "MultiCamIp");
+    QString jezyk = settings.value("jezyk/kod", "pl").toString();
+    int index = comboBoxLanguage->findData(jezyk);
+    if (index >= 0){
+        comboBoxLanguage->setCurrentIndex(index);
+    }
+
+    QWidget *spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+    toolbar->addWidget(spacer);
+    toolbar->addWidget(labelLanguage);
+    toolbar->addWidget(comboBoxLanguage);
+
+    connect(comboBoxLanguage, &QComboBox::currentIndexChanged, this, [comboBoxLanguage](int index){
+        if(comboBoxLanguage->currentData() == "pl"){
+            qDebug() << comboBoxLanguage->currentIndex() << index
+                 <<"język polski";
+        }else if(comboBoxLanguage->currentData() == "en"){
+            qDebug() << comboBoxLanguage->currentIndex() << index
+            <<"język angielski";
+        }
+        QSettings settings("MojaFirma", "MultiCamIp");
+        settings.setValue("jezyk/kod",
+                          comboBoxLanguage->itemData(index).toString());
+        settings.sync();
+    });
 }
 
 void MainWindow::ukryjPokazPanelSerwer()
