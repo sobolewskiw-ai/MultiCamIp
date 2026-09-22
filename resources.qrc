@@ -29,5 +29,7 @@
         <file>icons/token.svg</file>
         <file>icons/kopiuj.svg</file>
 	<file>translations/multicamip_en.qm</file>
+	<file>translations/multicamip_de.qm</file>
+	<file>translations/multicamip_es.qm</file>
     </qresource>
 </RCC>

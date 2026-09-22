@@ -50,3 +50,7 @@ Thumbs.db
 # Jeśli plik kamery.dat trafia gdzieś w repo przypadkiem - nie commitujemy
 # danych użytkownika, tylko kod.
 kamery.dat
+
+# Artefakty IDE / notatki robocze
+DRfIlC.json
+jezyk

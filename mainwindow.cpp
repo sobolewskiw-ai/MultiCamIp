@@ -1134,10 +1134,26 @@ void MainWindow::setupUi()
     connect(comboBoxLanguage, &QComboBox::currentIndexChanged, this, [comboBoxLanguage](int index){
         if(comboBoxLanguage->currentData() == "pl"){
             qDebug() << comboBoxLanguage->currentIndex() << index
-                 <<"język polski";
+                     <<"język polski" << comboBoxLanguage->currentData().toString()
+                     << comboBoxLanguage->currentText()
+                     << comboBoxLanguage->itemData(index).toString();
         }else if(comboBoxLanguage->currentData() == "en"){
             qDebug() << comboBoxLanguage->currentIndex() << index
-            <<"język angielski";
+            <<"język angielski" << comboBoxLanguage->currentData().toString()
+                     << comboBoxLanguage->currentText()
+                     << comboBoxLanguage->itemData(index).toString();
+        }
+        else if(comboBoxLanguage->currentData() == "de"){
+            qDebug() << comboBoxLanguage->currentIndex() << index
+                     <<"język niemiecki" << comboBoxLanguage->currentData().toString()
+                     << comboBoxLanguage->currentText()
+                     << comboBoxLanguage->itemData(index).toString();
+        }
+        else if(comboBoxLanguage->currentData() == "es"){
+            qDebug() << comboBoxLanguage->currentIndex() << index
+                     <<"język hiszpański" << comboBoxLanguage->currentData().toString()
+                     << comboBoxLanguage->currentText()
+                     << comboBoxLanguage->itemData(index).toString();
         }
         QSettings settings("MojaFirma", "MultiCamIp");
         settings.setValue("jezyk/kod", comboBoxLanguage->itemData(index).toString());
@@ -3147,7 +3163,7 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
             }
 
             if (httpSerwer->start(appHomePath, 8080)) {
-                item->setText("ZATRZYMAJ SERWER RTSP i HTTP");
+                item->setText(tr("ZATRZYMAJ SERWER RTSP i HTTP"));
                 qDebug() << "Serwer HTTP wystartował na porcie" << httpSerwer->serverPort();
                 mtx->ensureInstalled();
             } else {
@@ -3157,7 +3173,7 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         } else {
             httpSerwer->stop();
             mtx->stopMtx();
-            item->setText("START SERWER RTSP I HTTP");
+            item->setText(tr("START SERWER RTSP I HTTP"));
             qDebug() << "Serwer HTTP zatrzymany";
         }
     }else if(item->data(Qt::UserRole).toString() == "szukaj kamer"){     //(text == "Szukaj kamer"){

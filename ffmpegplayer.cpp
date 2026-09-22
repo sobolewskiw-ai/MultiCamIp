@@ -384,15 +384,6 @@ void FfmpegPlayer::showReconnectLabel(int secondsLeft)
 {
     if (!targetLabel) return;
     targetLabel->clear();
-    // targetLabel->setText(
-    //     QString("⟳ %1...\n%2 %3 %4 %5 %6")
-    //         .arg(tr("Ponowne łączenie"))
-    //         .arg(tr("Próba"))
-    //         .arg(reconnectAttempt)
-    //         .arg("za")
-    //         .arg(secondsLeft)
-    //         .arg(tr("sekund"))
-    // );
     targetLabel->setText(
         tr("⟳ Ponowne łączenie...\nPróba %1 za %2 sekund")
             .arg(reconnectAttempt)
