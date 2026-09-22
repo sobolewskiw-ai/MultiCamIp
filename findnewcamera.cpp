@@ -174,12 +174,12 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 1 – Adres IP kamery
     // ===============================
     QHBoxLayout *layoutPoziom1 = new QHBoxLayout();
-    labelAdresIpKamery = new QLabel("Wpisz adres IP kamery:", this);
+    labelAdresIpKamery = new QLabel(tr("Wpisz adres IP kamery:"), this);
     labelAdresIpKamery->setAlignment(Qt::AlignCenter);
     labelAdresIpKamery->setStyleSheet(stylesheetLabel);
     //labelAdresIpKamery->setFixedWidth(200);
     LineEditAdresIpKamery = new QLineEdit(this);
-    LineEditAdresIpKamery->setPlaceholderText("np: 192.168.2.111");
+    LineEditAdresIpKamery->setPlaceholderText(tr("np: 192.168.2.111"));
     LineEditAdresIpKamery->setStyleSheet(stylesheetLabel);
     layoutPoziom1->addWidget(labelAdresIpKamery,6);
     layoutPoziom1->addWidget(LineEditAdresIpKamery,4);
@@ -187,12 +187,12 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 1_1 – PORTY RTSP
     // ===============================
     QHBoxLayout *layoutPoziom1_1 = new QHBoxLayout();
-    labelPortyRTSP = new QLabel("Po przecinku wpisz porty rtsp:", this);
+    labelPortyRTSP = new QLabel(tr("Po przecinku wpisz porty rtsp:"), this);
     labelPortyRTSP->setAlignment(Qt::AlignCenter);
     labelPortyRTSP->setStyleSheet(stylesheetLabel);
     //labelPortyRTSP->setFixedWidth(200);
     LineEditPortyRTSP = new QLineEdit(this);
-    LineEditPortyRTSP->setPlaceholderText("np: 554, 10554");
+    LineEditPortyRTSP->setPlaceholderText(tr("np: 554, 10554"));
     LineEditPortyRTSP->setStyleSheet(stylesheetLabel);
     layoutPoziom1_1->addWidget(labelPortyRTSP,6);
     layoutPoziom1_1->addWidget(LineEditPortyRTSP,4);
@@ -200,12 +200,12 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 1_2 – PORTY HTTP
     // ===============================
     QHBoxLayout *layoutPoziom1_2 = new QHBoxLayout();
-    labelPortyHTTP = new QLabel("Po przecinku wpisz porty http:", this);
+    labelPortyHTTP = new QLabel(tr("Po przecinku wpisz porty http:"), this);
     labelPortyHTTP->setAlignment(Qt::AlignCenter);
     labelPortyHTTP->setStyleSheet(stylesheetLabel);
     //labelPortyRTSP->setFixedWidth(200);
     LineEditPortyHTTP = new QLineEdit(this);
-    LineEditPortyHTTP->setPlaceholderText("np: 80, 8080, 8000, 8888");
+    LineEditPortyHTTP->setPlaceholderText(tr("np: 80, 8080, 8000, 8888"));
     LineEditPortyHTTP->setStyleSheet(stylesheetLabel);
     layoutPoziom1_2->addWidget(labelPortyHTTP,6);
     layoutPoziom1_2->addWidget(LineEditPortyHTTP,4);
@@ -213,12 +213,12 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 2 – Login
     // ===============================
     QHBoxLayout *layoutPoziom2 = new QHBoxLayout();
-    labelCameraLogin = new QLabel("Login:", this);
+    labelCameraLogin = new QLabel(tr("Login:"), this);
     labelCameraLogin->setAlignment(Qt::AlignCenter);
     labelCameraLogin->setStyleSheet(stylesheetLabel);
     //labelCameraLogin->setFixedWidth(200);
     LineEditCameraLogin = new QLineEdit(this);
-    LineEditCameraLogin->setPlaceholderText("admin");
+    LineEditCameraLogin->setPlaceholderText(tr("admin"));
     LineEditCameraLogin->setStyleSheet(stylesheetLabel);
     layoutPoziom2->addWidget(labelCameraLogin,6);
     layoutPoziom2->addWidget(LineEditCameraLogin,4);
@@ -226,19 +226,19 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 3 – Hasło
     // ===============================
     QHBoxLayout *layoutPoziom3 = new QHBoxLayout();
-    labelCameraPassword = new QLabel("Password:", this);
+    labelCameraPassword = new QLabel(tr("Password:"), this);
     labelCameraPassword->setAlignment(Qt::AlignCenter);
     labelCameraPassword->setStyleSheet(stylesheetLabel);
     //labelCameraPassword->setFixedWidth(200);
     LineEditCameraPassword = new QLineEdit(this);
-    LineEditCameraPassword->setPlaceholderText("123456");
+    LineEditCameraPassword->setPlaceholderText(tr("123456"));
     LineEditCameraPassword->setStyleSheet(stylesheetLabel);
     layoutPoziom3->addWidget(labelCameraPassword,6);
     layoutPoziom3->addWidget(LineEditCameraPassword,4);
     // ===============================
     // Poziom 4 Przycisk i lista
     // ===============================
-    buttonSkanuj = new QPushButton("Skanuj", this);
+    buttonSkanuj = new QPushButton(tr("Skanuj"), this);
     buttonSkanuj->setIcon(QIcon(":/icons/skanuj.svg"));
     buttonSkanuj->setIconSize(QSize(32,32));
     buttonSkanuj->setStyleSheet(stylesheetPushButton);
@@ -248,16 +248,16 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // Poziom 5 Przyciski play zapisz zamknij
     // ===============================
     QHBoxLayout *layoutPoziom4 = new QHBoxLayout();
-    buttonPlay = new QPushButton("Play", this);
+    buttonPlay = new QPushButton(tr("Play"), this);
     buttonPlay->setIcon(QIcon(":/icons/play.svg"));
     buttonPlay->setIconSize(QSize(32,32));
     buttonPlay->setStyleSheet(stylesheetPushButton);
-    buttonZapisz = new QPushButton("Zapisz", this);
+    buttonZapisz = new QPushButton(tr("Zapisz"), this);
     buttonZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
     buttonZapisz->setIconSize(QSize(32,32));
     buttonZapisz->setStyleSheet(stylesheetPushButton);
     buttonZapisz->setEnabled(false);
-    buttonZamknij = new QPushButton("Zamknij", this);
+    buttonZamknij = new QPushButton(tr("Zamknij"), this);
     buttonZamknij->setIcon(QIcon(":/icons/zamknij.svg"));
     buttonZamknij->setIconSize(QSize(32,32));
     buttonZamknij->setStyleSheet(stylesheetPushButton);
@@ -278,7 +278,7 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // ===============================
     // --- LEWY UKŁAD ---
     // ===============================
-    labelPlay = new QLabel("Player of video",this);
+    labelPlay = new QLabel(tr("Odtwarzacz video"),this);
     labelPlay->setAlignment(Qt::AlignCenter);
     // ===============================
     // --- CENTRALNY UKŁAD ---
@@ -373,8 +373,8 @@ void FindNewCamera::buttonSkanuj_clicked()
     // "w tle" bez żadnego sposobu na jego obserwację, co kumulowało obciążenie
     // CPU/sieci po kilku kolejnych skanowaniach.
     if (watcher.isRunning()) {
-        QMessageBox::information(this, "Skanowanie w toku",
-            "Poprzednie skanowanie jeszcze się nie zakończyło. Poczekaj na jego koniec lub kliknij Anuluj.");
+        QMessageBox::information(this, tr("Skanowanie w toku"),
+            tr("Poprzednie skanowanie jeszcze się nie zakończyło. Poczekaj na jego koniec lub kliknij Anuluj."));
         return;
     }
 
@@ -388,7 +388,7 @@ void FindNewCamera::buttonSkanuj_clicked()
     QString pass = LineEditCameraPassword->text().trimmed();
 
     if (ip.isEmpty()) {
-        QMessageBox::warning(this, "Błąd", "Podaj adres IP kamery!");
+        QMessageBox::warning(this, tr("Błąd"), tr("Podaj adres IP kamery!"));
         return;
     }
 
@@ -470,7 +470,7 @@ void FindNewCamera::buttonSkanuj_clicked()
         oldDialog->close();
         oldDialog->deleteLater();
     }
-    progressDialog = new QProgressDialog("Skanowanie strumieni...", "Anuluj", 0, urls.size(), this);
+    progressDialog = new QProgressDialog(tr("Skanowanie strumieni..."), tr("Anuluj"), 0, urls.size(), this);
     progressDialog->setWindowModality(Qt::ApplicationModal);
     progressDialog->setMinimumDuration(0);
     progressDialog->setValue(0);
@@ -549,7 +549,7 @@ void FindNewCamera::buttonSkanuj_clicked()
 
         //qDebug()<<;
         //        ui->statusbar->clearMessage();
-        QMessageBox::information(this, "Zakończono",QString("Znaleziono %1 działających strumieni.").arg(validStreams.size()));
+        QMessageBox::information(this, tr("Zakończono"),QString(tr("Znaleziono %1 działających strumieni.")).arg(validStreams.size()));
 
     });
 
@@ -576,7 +576,7 @@ void FindNewCamera::buttonPlay_clicked()
     }
     QListWidgetItem *item = widgetListListaStrumieni->currentItem();
     if (!item) {
-        QMessageBox::warning(this, "Błąd", "Nie wybrano strumienia!");
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie wybrano strumienia!"));
         return;
     }
     // DROBNA POPRAWKA: item->text() jest teraz zamaskowanym adresem (patrz
@@ -592,7 +592,7 @@ void FindNewCamera::buttonPlay_clicked()
     // adresów IP. Otwieramy strumień w tle (QtConcurrent::run) i przenosimy
     // gotowy uchwyt do `cap` po powrocie na wątek GUI.
     buttonPlay->setEnabled(false);
-    buttonPlay->setText("Łączenie...");
+    buttonPlay->setText(tr("Łączenie..."));
 
     const quint64 myRequestId = ++playRequestId;
 
@@ -615,10 +615,10 @@ void FindNewCamera::buttonPlay_clicked()
         }
 
         buttonPlay->setEnabled(true);
-        buttonPlay->setText("Play");
+        buttonPlay->setText(tr("Play"));
 
         if (!opened.isOpened()) {
-            QMessageBox::critical(this, "Błąd", "Nie można otworzyć strumienia!");
+            QMessageBox::critical(this, tr("Błąd"), tr("Nie można otworzyć strumienia!"));
             return;
         }
 
@@ -632,11 +632,11 @@ void FindNewCamera::buttonPlay_clicked()
 void FindNewCamera::buttonZapisz_cliced()
 {
     if (!cap.isOpened()) {
-        QMessageBox::warning(this, "Błąd", "Najpierw uruchom podgląd (Play), żeby zapisać kamerę!");
+        QMessageBox::warning(this, tr("Błąd"), tr("Najpierw uruchom podgląd (Play), żeby zapisać kamerę!"));
         return;
     }
     if (!widgetListListaStrumieni->currentItem()) {
-        QMessageBox::warning(this, "Błąd", "Nie wybrano strumienia z listy!");
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie wybrano strumienia z listy!"));
         return;
     }
     // DROBNA POPRAWKA (krucha konstrukcja): jeśli `parent` przekazany do
@@ -644,7 +644,7 @@ void FindNewCamera::buttonZapisz_cliced()
     // konstruktor). Dalsza część tej metody odwołuje się do
     // mainwindow->appHomePath - bez tego strażnika byłby to null-deref.
     if (!mainwindow) {
-        QMessageBox::warning(this, "Błąd", "Brak referencji do okna głównego - nie można zapisać kamery");
+        QMessageBox::warning(this, tr("Błąd"), tr("Brak referencji do okna głównego - nie można zapisać kamery"));
         return;
     }
 
@@ -660,28 +660,29 @@ void FindNewCamera::buttonZapisz_cliced()
     dialog->setMinimumSize(600,300);
 
     QHBoxLayout *layoutH1 = new QHBoxLayout;
-    QLabel *textEditLabel = new QLabel("Nazwa kamery: ");
+    QLabel *textEditLabel = new QLabel(tr("Nazwa kamery: "));
     QLineEdit *textEdit = new QLineEdit("", dialog);
-    textEdit->setPlaceholderText("wpisz nazwę dla kamery");
+    textEdit->setPlaceholderText(tr("wpisz nazwę dla kamery"));
     layoutH1->addWidget(textEditLabel,3);
     layoutH1->addWidget(textEdit,1);
 
-    QCheckBox *boolCheck = new QCheckBox("Włącz: Detekcja ruchu przy zapisie", dialog);
+    QCheckBox *boolCheck = new QCheckBox(tr("Włącz: Detekcja ruchu przy zapisie"), dialog);
 
     QHBoxLayout *layoutH2 = new QHBoxLayout;
     //QLabel *int1SpinLabel = new QLabel("Długość nagrania domyślnie 10 min");
     //QSpinBox *int1Spin = new QSpinBox(dialog);
     //layoutH2->addWidget(int1SpinLabel,3);
     //layoutH2->addWidget(int1Spin,1);
-    QLabel *int1SpinLabel = new QLabel("Zapisz do: ");
+    QLabel *int1SpinLabel = new QLabel(tr("Zapisz do: "));
     QLabel *zapiszDoLineEdit = new QLabel(mainwindow->appHomePath + "/Video/");
-    QPushButton *przegladajBtn = new QPushButton("Przeglądaj", dialog);
+    QPushButton *przegladajBtn = new QPushButton(tr("Przeglądaj"), dialog);
     layoutH2->addWidget(int1SpinLabel,2);
     layoutH2->addWidget(zapiszDoLineEdit,4);
     layoutH2->addWidget(przegladajBtn, 1);
     connect(przegladajBtn, &QPushButton::clicked, this, [=]()
             {
                 QFileDialog dialog(this);
+                dialog.setWindowTitle(tr("Wybierz katalog"));
                 dialog.setOption(QFileDialog::DontUseNativeDialog, true);
                 dialog.setOption(QFileDialog::ShowDirsOnly, true);
                 dialog.setFileMode(QFileDialog::Directory);
@@ -696,18 +697,18 @@ void FindNewCamera::buttonZapisz_cliced()
             });
 
     QHBoxLayout *layoutH3 = new QHBoxLayout;
-    QLabel *int2SpinLabel = new QLabel("Ile dni przechowywać nagrania ?");
+    QLabel *int2SpinLabel = new QLabel(tr("Ile dni przechowywać nagrania ?"));
     QSpinBox *int2Spin = new QSpinBox(dialog);
     layoutH3->addWidget(int2SpinLabel,3);
     layoutH3->addWidget(int2Spin,1);
 
     QHBoxLayout *layoutH4 = new QHBoxLayout;
-    QLabel *comboBoxLabel = new QLabel("Określ wielkość przedmiotu przy detekcji ruchu");
+    QLabel *comboBoxLabel = new QLabel(tr("Określ wielkość przedmiotu przy detekcji ruchu"));
     QComboBox *comboBox = new QComboBox(dialog);
     layoutH4->addWidget(comboBoxLabel,3);
     layoutH4->addWidget(comboBox,1);
 
-    QPushButton *okButton = new QPushButton("OK", dialog);
+    QPushButton *okButton = new QPushButton(tr("OK"), dialog);
 
     //int1Spin->setRange(1, 60);
     //int1Spin->setValue(10);
@@ -723,9 +724,9 @@ void FindNewCamera::buttonZapisz_cliced()
         "    color: #000000;"
         "}"
         );
-    comboBox->insertItem(0,"Mały");
-    comboBox->insertItem(1,"Średni");
-    comboBox->insertItem(2,"Duży");
+    comboBox->insertItem(0,tr("Mały"));
+    comboBox->insertItem(1,tr("Średni"));
+    comboBox->insertItem(2,tr("Duży"));
     boolCheck->setCheckState(Qt::CheckState::Checked);
 
     connect(okButton, &QPushButton::clicked, dialog, &QDialog::accept);
@@ -765,11 +766,11 @@ void FindNewCamera::buttonZapisz_cliced()
             nazwaKameryWbazie = ItemModel->data(index).toString();
             qDebug()<< ItemModel->rowCount()<<ItemModel->columnCount()<<nazwaKameryWbazie << nazwaKamery;
             if(nazwaKameryWbazie == nazwaKamery){
-                QMessageBox::information(this,"UWAGA","Kamera o tej nazwie już istnieje\n Wprowadź inną nazwę");
+                QMessageBox::information(this,tr("UWAGA"),QString("%1\n %2").arg(tr("Kamera o tej nazwie już istnieje"),tr("Wprowadź inną nazwę")));
                 return;
             }
             if( nazwaKamery.trimmed().isEmpty()){
-                QMessageBox::information(this,"UWAGA","Wprowadź poprawną nazwę");
+                QMessageBox::information(this,tr("UWAGA"),tr("Wprowadź poprawną nazwę"));
                 return;
             }
         }
@@ -834,7 +835,7 @@ void FindNewCamera::updateFrame()
 void FindNewCamera::zapiszListaKamer()
 {
     if (!mainwindow) {
-        QMessageBox::warning(this, "Błąd", "Nie można zapisać - brak referencji do okna głównego");
+        QMessageBox::warning(this, tr("Błąd"), tr("Nie można zapisać - brak referencji do okna głównego"));
         return;
     }
     QString path = (mainwindow->appHomePath+"/");//QDir::homePath()+"/CameraDir/";
@@ -867,9 +868,9 @@ void FindNewCamera::zapiszListaKamer()
             }
         }
         file.close();
-        QMessageBox::information(this, "INFO", "Lista kamer zapisana");
+        QMessageBox::information(this, tr("INFO"), tr("Lista kamer zapisana"));
     }else{
-        QMessageBox::information(this, "INFO", "Lista kamer nie zapisana");
+        QMessageBox::information(this, tr("INFO"), tr("Lista kamer nie zapisana"));
     }
 }
 

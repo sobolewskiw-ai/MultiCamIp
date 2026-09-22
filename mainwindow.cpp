@@ -252,12 +252,14 @@ void MainWindow::setupUi()
     rootLayout->setContentsMargins(0,0,0,0);
     rootLayout->setSpacing(0);
 
+    QString menuHtml = "<span style=\"font-size:16pt; color:blue; font-weight:bold;\">☰ Menu</span>";
+
     centralLabel = new QLabel(
-        "Kliknij&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-        "<span style=\"font-size:16pt; color:blue; font-weight:bold;\">☰ Menu</span> "
-        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w pasku narzędzi, aby otworzyć wysuwany panel.",
+        //: %1 zostanie zastąpione stylizowanym napisem "☰ Menu" (HTML) -
+        //: nie tłumacz/nie usuwaj %1, możesz go dowolnie przestawić w zdaniu
+        tr("Kliknij %1 w pasku narzędzi, aby otworzyć wysuwany panel.").arg(menuHtml),
         this
-    );
+        );
     centralLabel->setAlignment(Qt::AlignCenter);
     drawerWidgetSerwer = new QWidget(this);
     drawerWidgetSerwer->setStyleSheet("background:#F5F5F5; border-right:2px solid blue; border-left:2px solid blue; border-bottom:2px solid blue; border-top:2px solid blue;");
@@ -278,12 +280,8 @@ void MainWindow::setupUi()
 
     toolbar = addToolBar("Main");
 
-    // QLabel *przerwa = new QLabel(this);
-    // przerwa->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    // toolbar->addWidget(przerwa);
-
 //PANEL BOCZNY SERWER
-    QAction *toggleActionSerwer = toolbar->addAction("☰ SERWER");
+    QAction *toggleActionSerwer = toolbar->addAction(QString("☰ %1").arg(tr("SERWER")));
     toggleActionSerwer->setCheckable(true);
     QLabel *przerwa = new QLabel(this);
     przerwa->setFixedWidth(10);
@@ -337,7 +335,8 @@ void MainWindow::setupUi()
     layoutSerwer->setContentsMargins(8,8,8,8);
     layoutSerwer->setSpacing(8);
 
-    QLabel *titleSerwer = new QLabel("<b>SERWER</b>", drawerWidgetSerwer);
+    QLabel *titleSerwer = new QLabel(QString("<b>%1</b>").arg(tr("SERWER")), drawerWidgetSerwer);
+    qDebug() << "titleSerwer =" << titleSerwer->text();
     titleSerwer->setStyleSheet(stylesheetLabelSelectedBlue);
     titleSerwer->setAlignment(Qt::AlignCenter);
     layoutSerwer->addWidget(titleSerwer);
@@ -349,31 +348,31 @@ void MainWindow::setupUi()
     itemfont.setBold(true);
     itemfont.setPointSize(12);
     //Add item1
-    QListWidgetItem *item1 = new QListWidgetItem("START SERWER RTSP I HTTP");
+    QListWidgetItem *item1 = new QListWidgetItem(tr("START SERWER RTSP I HTTP"));
     item1->setFont(itemfont);
     item1->setIcon(QIcon(":/icons/httpstart.png"));
     item1->setData(Qt::UserRole, "StartStop");
     menuListSerwer->addItem(item1);
     //Add item2
-    QListWidgetItem *item2 = new QListWidgetItem("SZUKAJ KAMER PO ADRESIE IP");
+    QListWidgetItem *item2 = new QListWidgetItem(tr("SZUKAJ KAMER PO ADRESIE IP"));
     item2->setFont(itemfont);
     item2->setIcon(QIcon(":/icons/szukaj.png"));
     item2->setData(Qt::UserRole, "szukaj kamer");
     menuListSerwer->addItem(item2);
     //Add item3
-    QListWidgetItem *item3 = new QListWidgetItem("USTAWIENIA KAMER");
+    QListWidgetItem *item3 = new QListWidgetItem(tr("USTAWIENIA KAMER"));
     item3->setFont(itemfont);
     item3->setIcon(QIcon(":/icons/szukaj.png"));
     item3->setData(Qt::UserRole, "USTAWIENIA");
     menuListSerwer->addItem(item3);
     //Add item4
-    QListWidgetItem *item4 = new QListWidgetItem("TOKEN HTTP");
+    QListWidgetItem *item4 = new QListWidgetItem(tr("TOKEN HTTP"));
     item4->setFont(itemfont);
     item4->setIcon(QIcon(":/icons/token.svg"));
     item4->setData(Qt::UserRole, "TOKEN");
     menuListSerwer->addItem(item4);
     //Add item5
-    QListWidgetItem *item5 = new QListWidgetItem("DODAJ IKONĘ DO PULPITU");
+    QListWidgetItem *item5 = new QListWidgetItem(tr("DODAJ IKONĘ DO PULPITU"));
     item5->setFont(itemfont);
     item5->setIcon(QIcon(":/icons/dodajdopulpitu.png"));
     item5->setData(Qt::UserRole, "IKONAPULPITU");
@@ -385,7 +384,7 @@ void MainWindow::setupUi()
     connect(menuListSerwer, &QListWidget::itemClicked, this, &MainWindow::onMenuItemSerwerClicked);
     connect(menuListSerwer, &QListWidget::itemActivated, this, &MainWindow::onMenuItemSerwerClicked);
 
-    QPushButton *closeBtnSerwer = new QPushButton("Ukryj", drawerWidgetSerwer);
+    QPushButton *closeBtnSerwer = new QPushButton(tr("Ukryj"), drawerWidgetSerwer);
     closeBtnSerwer->setIcon(QIcon(":/icons/ukryj.svg"));
     closeBtnSerwer->setIconSize(QSize(32,32));
     closeBtnSerwer->setStyleSheet(stylesheetPushButton);
@@ -394,7 +393,7 @@ void MainWindow::setupUi()
     layoutSerwer->addWidget(closeBtnSerwer);
 
 //PANEL BOCZNY PODGLĄD
-    QAction *toggleActionPodglad = toolbar->addAction("☰ PODGLĄD");
+    QAction *toggleActionPodglad = toolbar->addAction(tr("☰ PODGLĄD"));
     toggleActionPodglad->setCheckable(true);
     QLabel *przerwa2 = new QLabel(this);
     przerwa2->setFixedWidth(10);
@@ -443,7 +442,7 @@ void MainWindow::setupUi()
     layoutPodglad->setContentsMargins(8,8,8,8);
     layoutPodglad->setSpacing(8);
 
-    QLabel *titlePodglad = new QLabel("PODGLĄD", drawerWidgetPodglad);
+    QLabel *titlePodglad = new QLabel(tr("PODGLĄD"), drawerWidgetPodglad);
     titlePodglad->setStyleSheet(stylesheetLabelSelectedBlue);
     titlePodglad->setAlignment(Qt::AlignCenter);
     layoutPodglad->addWidget(titlePodglad);
@@ -457,7 +456,7 @@ void MainWindow::setupUi()
     //Add widget
 //    createWidgetListaLivekamery();
 
-    QPushButton *btnSerweryLiveStream = new QPushButton("LIVE SERWERY",drawerWidgetPodglad);
+    QPushButton *btnSerweryLiveStream = new QPushButton(tr("LIVE SERWERY"),drawerWidgetPodglad);
     btnSerweryLiveStream->setIcon(QIcon(":/icons/liveserwery.svg"));
     btnSerweryLiveStream->setIconSize(QSize(32,32));
     btnSerweryLiveStream->setStyleSheet(stylesheetPushButton + "QPushButton { font-size: 24px; }");
@@ -471,7 +470,7 @@ void MainWindow::setupUi()
 
         QDialog *dialog = new QDialog(this);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
-        dialog->setWindowTitle("SERWERY LIVE STREAM");
+        dialog->setWindowTitle(tr("SERWERY LIVE STREAM"));
         dialog->resize(900, 500);
         QVBoxLayout *layoutDialog = new QVBoxLayout(dialog);
 
@@ -481,7 +480,7 @@ void MainWindow::setupUi()
         table = new QTableWidget(dialog);
         table->setColumnCount(4);
         table->setHorizontalHeaderLabels(
-            {"Lp.", "Nazwa serwera", "Adres","Status"}
+            {tr("Lp."), tr("Nazwa serwera"), tr("Adres"),tr("Status")}
             );
         table->verticalHeader()->setVisible(false);
         table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -638,13 +637,13 @@ void MainWindow::setupUi()
         timerOnline->start(5000); // co 5s zamiast 1s - sprawdzanie dostępności nie musi być co sekundę
 
         QHBoxLayout *h1layout = new QHBoxLayout();
-        QPushButton *btnDodaj      = new QPushButton("➕ Dodaj");
-        QPushButton *btnUsun       = new QPushButton("🗑 Usuń");
-        QPushButton *btnModyfikuj  = new QPushButton("✏ Modyfikuj");
-        QPushButton *btnPolacz     = new QPushButton("🟢 Połącz");
-        QPushButton *btnRozlacz     = new QPushButton("🔴 Rozłącz");
-        QPushButton *btnZapisz     = new QPushButton("💾 Zapisz");
-        QPushButton *btnAnuluj     = new QPushButton("✖ Zamknij");
+        QPushButton *btnDodaj      = new QPushButton(tr("➕ Dodaj"));
+        QPushButton *btnUsun       = new QPushButton(tr("🗑 Usuń"));
+        QPushButton *btnModyfikuj  = new QPushButton(tr("✏ Modyfikuj"));
+        QPushButton *btnPolacz     = new QPushButton(tr("🟢 Połącz"));
+        QPushButton *btnRozlacz     = new QPushButton(tr("🔴 Rozłącz"));
+        QPushButton *btnZapisz     = new QPushButton(tr("💾 Zapisz"));
+        QPushButton *btnAnuluj     = new QPushButton(tr("✖ Zamknij"));
 
         btnDodaj->setStyleSheet(stylesheetPushButton);
         btnUsun->setStyleSheet(stylesheetPushButtonRed);
@@ -682,7 +681,7 @@ void MainWindow::setupUi()
         QVBoxLayout *layoutPage2 = new QVBoxLayout(widget2page);
 
         QHBoxLayout *h1layoutPage2 = new QHBoxLayout();
-        QLabel *numer = new QLabel("Id serwera:");
+        QLabel *numer = new QLabel(tr("Id serwera:"));
         numer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         numer->setStyleSheet(stylesheetLabelSelectedBlue);
         QLabel *numer2 = new QLabel("");
@@ -701,7 +700,7 @@ void MainWindow::setupUi()
         h1layoutPage2->addStretch(1);
 
         QHBoxLayout *h2layoutPage2 = new QHBoxLayout();
-        QLabel *labelNazwa = new QLabel("LOKALIZACJA SERWERA");
+        QLabel *labelNazwa = new QLabel(tr("LOKALIZACJA SERWERA"));
         labelNazwa->setStyleSheet(stylesheetLabelSelectedBlue);
         labelNazwa->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         QLineEdit *lineEditNazwa = new QLineEdit();
@@ -720,7 +719,7 @@ void MainWindow::setupUi()
         h2layoutPage2->addStretch(1);
 
         QHBoxLayout *h3layoutPage2 = new QHBoxLayout();
-        QLabel *labelAdres = new QLabel("ADRES IP SERWERA");
+        QLabel *labelAdres = new QLabel(tr("ADRES IP SERWERA"));
         labelAdres->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         labelAdres->setStyleSheet(stylesheetLabelSelectedBlue);
         QLineEdit * lineEditAdres = new QLineEdit();
@@ -739,10 +738,10 @@ void MainWindow::setupUi()
         h3layoutPage2->addStretch(1);
 
         QHBoxLayout *h4layoutPage2 = new QHBoxLayout();
-        QPushButton *btnZapiszPage2 = new QPushButton("💾 Zapisz");
+        QPushButton *btnZapiszPage2 = new QPushButton(tr("💾 Zapisz"));
         btnZapiszPage2->setStyleSheet(stylesheetPushButton);
         btnZapiszPage2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        QPushButton *btnAnulujPage2 = new QPushButton("✖ ANULUJ");
+        QPushButton *btnAnulujPage2 = new QPushButton(tr("✖ ANULUJ"));
         btnAnulujPage2->setStyleSheet(stylesheetPushButtonRed);
         btnAnulujPage2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         h4layoutPage2->addWidget(btnZapiszPage2,1);
@@ -770,7 +769,7 @@ void MainWindow::setupUi()
         connect(btnZapiszPage2, &QPushButton::clicked,stackedWidget,[this,font,stackedWidget,
                 widget1page,numer2,lineEditNazwa,lineEditAdres](){
             if(lineEditNazwa->text().trimmed().isEmpty() || lineEditAdres->text().trimmed().isEmpty()){
-                QMessageBox::information(this,"INFO","WYPEŁNIJ PUSTE POLA");
+                QMessageBox::information(this,tr("INFO"),tr("WYPEŁNIJ PUSTE POLA"));
                 return;
             }
             QString adres = lineEditAdres->text().trimmed();
@@ -830,7 +829,7 @@ void MainWindow::setupUi()
                 QRegularExpression tylkoCyfryKropki(R"(^[0-9.]+$)");
                 if (tylkoCyfryKropki.match(adres).hasMatch())
                 {
-                    QMessageBox::warning(this,"Błąd","Niepoprawny adres IPv4.");
+                    QMessageBox::warning(this,tr("Błąd"),tr("Niepoprawny adres IPv4."));
                     return;
                 }
                 QString firstLabel = adres.section('.', 0, 0);
@@ -839,8 +838,8 @@ void MainWindow::setupUi()
                 if (tylkoCyfry)
                 {
                     QMessageBox::warning(this,
-                        "Błąd",
-                        "Nazwa hosta nie może zaczynać się od samych cyfr.");
+                        tr("Błąd"),
+                        tr("Nazwa hosta nie może zaczynać się od samych cyfr."));
                     return;
                 }
             // sprawdzamy nazwę hosta lub domenę
@@ -848,7 +847,7 @@ void MainWindow::setupUi()
             QHostInfo::lookupHost(adres, this,
                 [this,numer2,font,lineEditNazwa,lineEditAdres,stackedWidget,widget1page](const QHostInfo &info){
                 if (info.error() != QHostInfo::NoError ||info.addresses().isEmpty()){
-                    QMessageBox::warning(this,"Błąd","Wprowadź poprawny adres IP lub nazwę hosta.");
+                    QMessageBox::warning(this,tr("Błąd"),tr("Wprowadź poprawny adres IP lub nazwę hosta."));
                     return;
                 }
                 qDebug() << "Poprawna nazwa hosta.";
@@ -892,7 +891,7 @@ void MainWindow::setupUi()
                                     widget2page,numer2,lineEditNazwa,lineEditAdres](){
             int row = table->currentRow();
             if(row == -1){
-                QMessageBox::information(nullptr,"INFO","WYBIERZ WIERSZ");
+                QMessageBox::information(nullptr,tr("INFO"),tr("WYBIERZ WIERSZ"));
                 return;
             }else{
             numer2->setText(table->item(row,0) ? table->item(row,0)->text() : QString());
@@ -950,8 +949,8 @@ void MainWindow::setupUi()
             createWidgetListaLivekamery();
             qDebug() << "po createWidgetListaLivekamery";
             }else{
-                QMessageBox::information(nullptr, "UWAGA", "NIE MOŻNA POŁĄCZYĆ Z"
-                " SERWEREM:\n"+adres+"\n1) sprawdź internet\n2) uruchom serwer na "+adres+"\n3) na routerze przekieruj porty\n 8554 i 8080 do "+adres);
+                QMessageBox::information(nullptr, tr("UWAGA"), QString(tr("NIE MOŻNA POŁĄCZYĆ Z"
+                        " SERWEREM:\n%1\n1) sprawdź internet\n2) uruchom serwer na %1\n3) na routerze przekieruj porty\n 8554 i 8080 do %1")).arg(adres));
             }
         });
         connect(btnRozlacz, &QPushButton::clicked, dialog, [this](){
@@ -982,7 +981,7 @@ void MainWindow::setupUi()
         qDebug()<< "btnAnuluj powoduje linia2";
     });
 
-    QGroupBox *groupBox = new QGroupBox("widok okna liveStream",drawerWidgetPodglad);
+    QGroupBox *groupBox = new QGroupBox(tr("WYBIERZ"),drawerWidgetPodglad);
     groupBox->setAlignment(Qt::AlignCenter);
     //groupBox->setFixedHeight(80);
     QHBoxLayout *layoutWidokOkien = new QHBoxLayout(groupBox);
@@ -1031,7 +1030,7 @@ void MainWindow::setupUi()
     layoutWidokOkien->addStretch(1);
     groupBox->setLayout(layoutWidokOkien);
 
-    QPushButton *closeBtnPodglad = new QPushButton("Ukryj", drawerWidgetPodglad);
+    QPushButton *closeBtnPodglad = new QPushButton(tr("Ukryj"), drawerWidgetPodglad);
     closeBtnPodglad->setIcon(QIcon(":/icons/ukryj.svg"));
     closeBtnPodglad->setIconSize(QSize(32,32));
     closeBtnPodglad->setStyleSheet(stylesheetPushButton);
@@ -1041,7 +1040,7 @@ void MainWindow::setupUi()
     layoutPodglad->addWidget(closeBtnPodglad);
 
 //PANEL BOCZNY NAGRANIA
-    QAction *toggleActionNagrania = toolbar->addAction("☰ NAGRANIA");
+    QAction *toggleActionNagrania = toolbar->addAction(tr("☰ NAGRANIA"));
     toggleActionNagrania->setCheckable(true);
     QToolButton *toolButtonNagrania = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionNagrania));
     toolButtonNagrania->setFocusPolicy(Qt::StrongFocus);  //tutaj
@@ -1086,12 +1085,12 @@ void MainWindow::setupUi()
     layoutNagrania->setContentsMargins(8,8,8,8);
     layoutNagrania->setSpacing(8);
 
-    QLabel *titleNagrania = new QLabel("<b>NAGRANIA</b>", drawerWidgetNagrania);
+    QLabel *titleNagrania = new QLabel(tr("NAGRANIA"), drawerWidgetNagrania);
     titleNagrania->setStyleSheet(stylesheetLabelSelectedBlue);
     titleNagrania->setAlignment(Qt::AlignCenter);
     layoutNagrania->addWidget(titleNagrania);
 
-    QPushButton *closeBtnNagrania = new QPushButton("Ukryj", drawerWidgetNagrania);
+    QPushButton *closeBtnNagrania = new QPushButton(tr("Ukryj"), drawerWidgetNagrania);
     closeBtnNagrania->setIcon(QIcon(":/icons/ukryj.svg"));
     closeBtnNagrania->setIconSize(QSize(32,32));
     closeBtnNagrania->setStyleSheet(stylesheetPushButton);
@@ -1106,7 +1105,7 @@ void MainWindow::setupUi()
     group->addAction(toggleActionNagrania);
 
 // MENU LANGUAGE
-    QLabel *labelLanguage = new QLabel("☰ JĘZYK: ", this);
+    QLabel *labelLanguage = new QLabel(tr("☰ JĘZYK: "), this);
     if(labelLanguage){
         labelLanguage->setFont(font);
         labelLanguage->setPalette(pal);
@@ -1117,6 +1116,7 @@ void MainWindow::setupUi()
     comboBoxLanguage->addItem("English", "en");
     comboBoxLanguage->addItem("Deutsch", "de");
     comboBoxLanguage->addItem("Español", "es");
+
     QSettings settings("MojaFirma", "MultiCamIp");
     QString jezyk = settings.value("jezyk/kod", "pl").toString();
     int index = comboBoxLanguage->findData(jezyk);
@@ -1140,8 +1140,7 @@ void MainWindow::setupUi()
             <<"język angielski";
         }
         QSettings settings("MojaFirma", "MultiCamIp");
-        settings.setValue("jezyk/kod",
-                          comboBoxLanguage->itemData(index).toString());
+        settings.setValue("jezyk/kod", comboBoxLanguage->itemData(index).toString());
         settings.sync();
     });
 }
@@ -1330,7 +1329,7 @@ void MainWindow::tworzeWidgetNagrania(int ileKamer)
         QVBoxLayout *layoutKameraWidget = new QVBoxLayout(kameraWidgetVector[x]);
         layoutKameraWidget->setContentsMargins(0,0,0,0);
         qDebug()<< kameraWidgetVector.count();
-        QLabel *labelVideo = new QLabel("KAMERA Nr: "+QString::number(x+1)+"\nBRAK OBRAZU", kameraWidgetVector[x]);
+        QLabel *labelVideo = new QLabel(QString(tr("KAMERA Nr: %1\nBRAK OBRAZU")).arg(QString::number(x+1)), kameraWidgetVector[x]);
         labelVideo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         labelVideo->setMinimumSize(1, 1);
         labelVideoVector.append(labelVideo);
@@ -1521,9 +1520,9 @@ void MainWindow::zapiszSerweryDat()
             }
         }
         file.close();
-        QMessageBox::information(this, "INFO", "Lista serwerów zapisana");
+        QMessageBox::information(this, tr("INFO"), tr("Lista serwerów zapisana"));
     }else{
-        QMessageBox::information(this, "INFO", "Lista serwerów nie zapisana");
+        QMessageBox::information(this, tr("INFO"), tr("Lista serwerów nie zapisana"));
     }
 }
 
@@ -1650,12 +1649,12 @@ void MainWindow::createWidgetListaLivekamery()
             int nrKamery = liczba;
             connect(btnOn, &QPushButton::clicked, widget,[this,nrKamery,kameraName,adresKamery,adres](){
                 if(labelVideoVector.isEmpty()){
-                    QMessageBox::information(nullptr,"INFO","WYBIERZ PODZIAŁ SIATKI KAMER");
+                    QMessageBox::information(nullptr,tr("INFO"),tr("WYBIERZ PODZIAŁ SIATKI KAMER"));
                     return;
                 }
                 if(nrKamery >= labelVideoVector.size()){
-                    QMessageBox::information(nullptr,"INFO",
-                        QString("BRAK WOLNEGO OKNA\n (OKNA: %1,LICZBA KAMER: %2)\nWYBIERZ SIATKĘ DLA %2 KAMER")
+                    QMessageBox::information(nullptr,tr("INFO"),
+                        QString(tr("BRAK WOLNEGO OKNA\n (OKNA: %1,LICZBA KAMER: %2)\nWYBIERZ SIATKĘ DLA %2 KAMER"))
                         .arg(labelVideoVector.size()).arg(nrKamery+1));
                     return;
                 }
@@ -1698,8 +1697,8 @@ void MainWindow::createWidgetListaLivekamery()
             btnOff->setStyleSheet(stylesheetPushButton);
             connect(btnOff, &QPushButton::clicked,widget,[this,nrKamery](){
                 if(nrKamery >= labelVideoVector.size()){
-                    QMessageBox::information(nullptr,"INFO",
-                        QString("Ta kamera nie odtwarza (okna: %1, kamera: %2)")
+                    QMessageBox::information(nullptr,tr("INFO"),
+                            QString(tr("Ta kamera nie odtwarza (okna: %1, kamera: %2)"))
                             .arg(labelVideoVector.size()).arg(nrKamery+1));
                     return;
                 }
@@ -1710,7 +1709,7 @@ void MainWindow::createWidgetListaLivekamery()
                 if(playerVector[nrKamery] && playerVector[nrKamery]->isPlaying()){
                     playerVector[nrKamery]->stop();
                     labelVideoVector[nrKamery]->clear();
-                    labelVideoVector[nrKamery]->setText(QString("KAMERA Nr: %1\nBRAK OBRAZU").arg(nrKamery+1));
+                    labelVideoVector[nrKamery]->setText(QString(tr("KAMERA Nr: %1\nBRAK OBRAZU")).arg(nrKamery+1));
                 }
             });
 
@@ -1732,7 +1731,7 @@ void MainWindow::createWidgetListaLivekamery()
                 itemVector[i]->setSizeHint(widgetVectr[i]->sizeHint());
             }
     }else{
-        QMessageBox::information(this,"INFO","ERROR CAM");
+        QMessageBox::information(this,tr("INFO"),tr("Nie odczytałem zapisanych kamer"));
     }
     tworzeWidgetNagrania(liczba);
 }
@@ -1749,17 +1748,21 @@ void MainWindow::createWidgetUstawienia()
     widget->setGeometry(0,0,this->width(),this->height());
     QVBoxLayout *widgetLayout = new QVBoxLayout(widget);
 //    QLabel *labelTitle = new QLabel("NA SERWERZE "+adreshttp+"\nKAMERY:\nDODAJ USUŃ MODYFIKUJ",widget);
+    // QString tekst = QString(
+    //                     "<div style='font-size: 24px;'>SERWER %1</div>"
+    //                     "<div style='font-size: 18px;'>KAMERY:<br>DODAJ USUŃ MODYFIKUJ</div>"
+    //                     ).arg(adreshttp);
     QString tekst = QString(
-                        "<div style='font-size: 24px;'>SERWER %1</div>"
-                        "<div style='font-size: 18px;'>KAMERY:<br>DODAJ USUŃ MODYFIKUJ</div>"
-                        ).arg(adreshttp);
+                        "<div style='font-size: 24px;'>%1 %2</div>"
+                        "<div style='font-size: 18px;'>%3<br>%4 %5 %6</div>"
+                        ).arg(tr("SERWER"),adreshttp,tr("KAMERY:"),tr("DODAJ"),tr("USUŃ"),tr("MODYFIKUJ"));
     QLabel *labelTitle = new QLabel(tekst, widget);
     labelTitle->setAlignment(Qt::AlignCenter);
     labelTitle->setStyleSheet(stylesheetLabelSelectedBlue);
     QTableWidget *table = new QTableWidget(0,9,widget);
     table->verticalHeader()->setVisible(false);
     table->setHorizontalHeaderLabels(
-        {"Id.", "Kamera", "Adres","Rozdzielczość","fps/s","Zapis nagrań do","Ile dni","Czułość","Detekcja"}
+        {tr("Id."), tr("Kamera"), tr("Adres"),tr("Rozdzielczość"),tr("fps/s"),tr("Zapis nagrań do"),tr("Ile dni"),tr("Czułość"),tr("Detekcja")}
         );
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1805,27 +1808,27 @@ void MainWindow::createWidgetUstawienia()
     table->setStyleSheet(stylesheetTable);
 
     QHBoxLayout *layouth1 = new QHBoxLayout();
-    QPushButton *btnZapisz = new QPushButton("ZAPISZ",widget);
+    QPushButton *btnZapisz = new QPushButton(tr("ZAPISZ"),widget);
     btnZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
     btnZapisz->setIconSize(QSize(32,32));
     btnZapisz->setStyleSheet(stylesheetPushButton);
-    QPushButton *btnDodaj = new QPushButton("DODAJ",widget);
+    QPushButton *btnDodaj = new QPushButton(tr("DODAJ"),widget);
     btnDodaj->setIcon(QIcon(":/icons/dodaj.svg"));
     btnDodaj->setIconSize(QSize(32,32));
     btnDodaj->setStyleSheet(stylesheetPushButton);
-    QPushButton *btnModyfikuj = new QPushButton("POKAŻ - MODYFIKUJ",widget);
+    QPushButton *btnModyfikuj = new QPushButton(tr("POKAŻ - MODYFIKUJ"),widget);
     btnModyfikuj->setIcon(QIcon(":/icons/pokazmodyfikuj.svg"));
     btnModyfikuj->setIconSize(QSize(32,32));
     btnModyfikuj->setStyleSheet(stylesheetPushButton);
-    QPushButton *strefyRuchu = new QPushButton("STREFY RUCHU",widget);
+    QPushButton *strefyRuchu = new QPushButton(tr("STREFY RUCHU"),widget);
     strefyRuchu->setIcon(QIcon(":/icons/strefyruchu.svg"));
     strefyRuchu->setIconSize(QSize(32,32));
     strefyRuchu->setStyleSheet(stylesheetPushButton);
-    QPushButton *btnUsun = new QPushButton("USUŃ",widget);
+    QPushButton *btnUsun = new QPushButton(tr("USUŃ"),widget);
     btnUsun->setIcon(QIcon(":/icons/usun.svg"));
     btnUsun->setIconSize(QSize(32,32));
     btnUsun->setStyleSheet(stylesheetPushButton);
-    QPushButton *btnAnuluj = new QPushButton("ANULUJ",widget);
+    QPushButton *btnAnuluj = new QPushButton(tr("ANULUJ"),widget);
     btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
     btnAnuluj->setIconSize(QSize(32,32));
     btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
@@ -1885,13 +1888,13 @@ void MainWindow::createWidgetUstawienia()
     widgetDodajKam->setWindowTitle("USTAWIENIA KAMERY");
     widgetDodajKam->setGeometry(0,0,this->width(),this->height());
     QVBoxLayout *dodajKamLayout = new QVBoxLayout(widgetDodajKam);
-    QLabel *labelDodajKam = new QLabel("KAMERY:\nDODAJ",widgetDodajKam);
+    QLabel *labelDodajKam = new QLabel(QString("%1\n%2 %3").arg(tr("KAMERY"),tr("DODAJ"),tr("MODYFIKUJ")),widgetDodajKam);
     labelDodajKam->setAlignment(Qt::AlignCenter);
     labelDodajKam->setStyleSheet(stylesheetLabelSelectedBlue);
     dodajKamLayout->addWidget(labelDodajKam);
 
     QHBoxLayout *layoutDK0 = new QHBoxLayout();
-    QLabel *labelDK01 = new QLabel("Id",widgetDodajKam);
+    QLabel *labelDK01 = new QLabel(tr("Id"),widgetDodajKam);
     labelDK01->setAlignment(Qt::AlignCenter);
     labelDK01->setStyleSheet(labelStyleSheet);
     QLabel *labelDK02 = new QLabel(QString::number(table->rowCount()),widgetDodajKam);
@@ -1902,7 +1905,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK0->addStretch(0);
 
     QHBoxLayout *layoutDK1 = new QHBoxLayout();
-    QLabel *labelDkNazwa = new QLabel("KAMERA:",widgetDodajKam);
+    QLabel *labelDkNazwa = new QLabel(tr("KAMERA:"),widgetDodajKam);
     labelDkNazwa->setAlignment(Qt::AlignCenter);
     labelDkNazwa->setStyleSheet(labelStyleSheet);
     QLineEdit *lineEditNazwa = new QLineEdit("",widgetDodajKam);
@@ -1912,7 +1915,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK1->addWidget(lineEditNazwa);
 
     QHBoxLayout *layoutDK2 = new QHBoxLayout();
-    QLabel *labelDkAdres = new QLabel("ADRES STRUMIENIA:",widgetDodajKam);
+    QLabel *labelDkAdres = new QLabel(tr("ADRES STRUMIENIA:"),widgetDodajKam);
     labelDkAdres->setAlignment(Qt::AlignCenter);
     labelDkAdres->setStyleSheet(labelStyleSheet);
     QLineEdit *lineEditAdres = new QLineEdit("",widgetDodajKam);
@@ -1922,7 +1925,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK2->addWidget(lineEditAdres);
 
     QHBoxLayout *layoutDK3 = new QHBoxLayout();
-    QLabel *labelDkRozdz1 = new QLabel("ROZDZIELCZOŚĆ KAMERY:",widgetDodajKam);
+    QLabel *labelDkRozdz1 = new QLabel(tr("ROZDZIELCZOŚĆ KAMERY:"),widgetDodajKam);
     labelDkRozdz1->setAlignment(Qt::AlignCenter);
     labelDkRozdz1->setStyleSheet(labelStyleSheet);
     QLabel *labelDkRozdz2 =new QLabel(widgetDodajKam);
@@ -1933,7 +1936,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK3->addStretch(0);
 
     QHBoxLayout *layoutDK4 = new QHBoxLayout();
-    QLabel *labelFps1 = new QLabel("fps/s", widgetDodajKam);
+    QLabel *labelFps1 = new QLabel(tr("fps/s"), widgetDodajKam);
     labelFps1->setAlignment(Qt::AlignCenter);
     labelFps1->setStyleSheet(labelStyleSheet);
     QLabel *labelFps2 = new QLabel(widgetDodajKam);
@@ -1944,7 +1947,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK4->addStretch(0);
 
     QHBoxLayout *layoutDK5 = new QHBoxLayout();
-    QLabel *labelDkPath = new QLabel("ZAPIS NAGRAŃ DO:",widgetDodajKam);
+    QLabel *labelDkPath = new QLabel(tr("ZAPIS NAGRAŃ DO:"),widgetDodajKam);
     labelDkPath->setAlignment(Qt::AlignCenter);
     labelDkPath->setStyleSheet(labelStyleSheet);
     QString path = QDir::homePath()+"/AppMultiCam/nagrania/";
@@ -1961,13 +1964,13 @@ void MainWindow::createWidgetUstawienia()
     btnPath->setStyleSheet(stylesheetPushButton);
     connect(btnPath, &QPushButton::clicked, this, [lineEditPath,lineEditNazwa]() {
         if(lineEditNazwa->text().trimmed().isEmpty()){
-            QMessageBox::information(nullptr,"UWAGA","WYPEŁNIJ NAJPIERW NAZWĘ KAMERY");
+            QMessageBox::information(nullptr,tr("UWAGA"),tr("WYPEŁNIJ NAJPIERW NAZWĘ KAMERY"));
             lineEditNazwa->setFocus();
             return;
         }
         QString sciezka = QFileDialog::getExistingDirectory(
             nullptr,
-            "Wybierz katalog",
+            tr("Wybierz katalog"),
             QDir::homePath()
             );
         if (!sciezka.isEmpty())
@@ -1979,7 +1982,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK5->addWidget(btnPath);
 
     QHBoxLayout *layoutDK6 = new QHBoxLayout();
-    QLabel *labelDkIleDni = new QLabel("ILE DNI PRZECHOWYWAĆ:",widgetDodajKam);
+    QLabel *labelDkIleDni = new QLabel(tr("ILE DNI PRZECHOWYWAĆ:"),widgetDodajKam);
     labelDkIleDni->setAlignment(Qt::AlignCenter);
     labelDkIleDni->setStyleSheet(labelStyleSheet);
     QSpinBox *spinBoxIleDni = new QSpinBox(widgetDodajKam);
@@ -1991,7 +1994,7 @@ void MainWindow::createWidgetUstawienia()
     layoutDK6->addStretch(0);
 
     QHBoxLayout *layoutDK7 = new QHBoxLayout();
-    QLabel *labelDkCzulosc = new QLabel("CZUŁOŚĆ DETEKCJI:",widgetDodajKam);
+    QLabel *labelDkCzulosc = new QLabel(tr("CZUŁOŚĆ DETEKCJI:"),widgetDodajKam);
     labelDkCzulosc->setAlignment(Qt::AlignCenter);
     labelDkCzulosc->setStyleSheet(labelStyleSheet);
     QSpinBox *spinBoxCzulosc = new QSpinBox(widgetDodajKam);
@@ -2006,14 +2009,14 @@ void MainWindow::createWidgetUstawienia()
     layoutDK7->addStretch(0);
 
     QHBoxLayout *layoutDK8 = new QHBoxLayout();
-    QLabel *labelDkDetekcja = new QLabel("DETEKCJA RUCHU:",widgetDodajKam);
+    QLabel *labelDkDetekcja = new QLabel(tr("DETEKCJA RUCHU:"),widgetDodajKam);
     labelDkDetekcja->setAlignment(Qt::AlignCenter);
     labelDkDetekcja->setStyleSheet(labelStyleSheet);
     QComboBox *comboBoxDetekcja = new QComboBox(widgetDodajKam);
     comboBoxDetekcja->setStyleSheet(comboBoxStyleSheet);
     comboBoxDetekcja->setFixedWidth(150);
-    comboBoxDetekcja->addItem("TAK",true);
-    comboBoxDetekcja->addItem("NIE",false);
+    comboBoxDetekcja->addItem(tr("TAK"),true);
+    comboBoxDetekcja->addItem(tr("NIE"),false);
     for (int i = 0; i < comboBoxDetekcja->count(); ++i)
         comboBoxDetekcja->setItemData(
             i,
@@ -2029,13 +2032,13 @@ void MainWindow::createWidgetUstawienia()
     // QPushButton *btnZapisz = new QPushButton("ZAPISZ",widgetDodajKam);
     // btnZapisz->setStyleSheet(stylesheetPushButton);
     // btnZapisz->setFixedWidth(szerokosc);
-    QPushButton *btnTest = new QPushButton("TEST",widgetDodajKam);
+    QPushButton *btnTest = new QPushButton(tr("TEST"),widgetDodajKam);
     btnTest->setStyleSheet(stylesheetPushButton);
     btnTest->setFixedWidth(szerokosc);
     // QPushButton *btnStrefyRuchu = new QPushButton("STREFY RUCHU",widgetDodajKam);
     // btnStrefyRuchu->setStyleSheet(stylesheetPushButton);
     // btnStrefyRuchu->setFixedWidth(szerokosc);
-    QPushButton *btnCancel = new QPushButton("ANULUJ",widgetDodajKam);
+    QPushButton *btnCancel = new QPushButton(tr("ANULUJ"),widgetDodajKam);
     btnCancel->setStyleSheet(stylesheetPushButtonRed);
     btnCancel->setFixedWidth(szerokosc);
 //    layoutBtn->addWidget(btnZapisz);
@@ -2115,10 +2118,10 @@ void MainWindow::createWidgetUstawienia()
     //    mtx->stopMtx();
     //    QTimer::singleShot(2000,[this](){mtx->startMtx();});
         if(ok){
-            QMessageBox::information(nullptr,"INFO","DANE ZAPISANE");
+            QMessageBox::information(nullptr,tr("INFO"),tr("DANE ZAPISANE"));
 
         }else{
-            QMessageBox::information(nullptr,"UWAGA","DANE NIE ZAPISANE");
+            QMessageBox::information(nullptr,tr("UWAGA"),tr("DANE NIE ZAPISANE"));
         }
     });
     connect(btnDodaj, &QPushButton::clicked, widget,[table,labelDK02,stack,widgetDodajKam,
@@ -2172,13 +2175,13 @@ void MainWindow::createWidgetUstawienia()
     connect(strefyRuchu, &QPushButton::clicked, widget, [this,widget,table,labelBorderStyleSheet](){
         QWidget *widgetStrefy = new QWidget(widget);
     //    widgetStrefy->setAttribute(Qt::WA_DeleteOnClose);
-        widgetStrefy->setWindowTitle("STREFY RUCHU");
+        widgetStrefy->setWindowTitle(tr("STREFY RUCHU"));
         widgetStrefy->setGeometry(0,0,this->width(),this->height());
         widgetStrefy->setStyleSheet("background-color: white;");
         widgetStrefy->show();
 
         QVBoxLayout *layoutCentral = new QVBoxLayout(widgetStrefy);
-        QLabel *labelTitle = new QLabel("USTAWIENIA\nSTREF RUCHU",widgetStrefy);
+        QLabel *labelTitle = new QLabel(QString("%1\n%2").arg(tr("USTAWIENIA"),tr("STREF RUCHU")),widgetStrefy);
         labelTitle->setStyleSheet(stylesheetLabelSelectedBlue);
         labelTitle->setAlignment(Qt::AlignCenter);
         labelTitle->setFixedHeight(100);
@@ -2209,7 +2212,7 @@ void MainWindow::createWidgetUstawienia()
         tabela->verticalHeader()->setVisible(false);
         tabela->setColumnCount(7);
         tabela->setHorizontalHeaderLabels(
-            {"L.p.","Nazwa", "Kamera Id", "x","ax","y","ay"}
+            {tr("L.p."),tr("Nazwa"), tr("Kamera Id"), "x","ax","y","ay"}
             );
         tabela->horizontalHeader()->setVisible(true);
         tabela->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -2235,15 +2238,15 @@ void MainWindow::createWidgetUstawienia()
             header->setSectionResizeMode(x,QHeaderView::Stretch);
         }
         QHBoxLayout *layouth1 = new QHBoxLayout();
-        QPushButton *btnZapisz = new QPushButton("ZAPISZ", widgetStrefy);
+        QPushButton *btnZapisz = new QPushButton(tr("ZAPISZ"), widgetStrefy);
         btnZapisz->setStyleSheet(stylesheetPushButton);
         btnZapisz->setIcon(QIcon(":/icons/zapisz.svg"));
         btnZapisz->setIconSize(QSize(40,40));
-        QPushButton *btnUsun = new QPushButton("USUŃ", widgetStrefy);
+        QPushButton *btnUsun = new QPushButton(tr("USUŃ"), widgetStrefy);
         btnUsun->setStyleSheet(stylesheetPushButtonRed);
         btnUsun->setIcon(QIcon(":/icons/usun.svg"));
         btnUsun->setIconSize(QSize(40,40));
-        QPushButton *btnAnuluj = new QPushButton("ANULUJ", widgetStrefy);
+        QPushButton *btnAnuluj = new QPushButton(tr("ANULUJ"), widgetStrefy);
         btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
         btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
         btnAnuluj->setIconSize(QSize(40,40));
@@ -2268,7 +2271,7 @@ void MainWindow::createWidgetUstawienia()
 
         auto [ok, resolution, fps] = ffprobeTest(adresmtx);
         if(!ok){
-            QMessageBox::information(nullptr,"INFO","SPRAWDŹ:\n- POPRAWNOŚĆ STRUMIENIA\n- ŁĄCZNOŚĆ Z KAMERĄ");
+            QMessageBox::information(nullptr,tr("INFO"),QString("%1:\n- %2\n- %3").arg(tr("SPRAWDŹ"),tr("POPRAWNOŚĆ STRUMIENIA"),tr("ŁĄCZNOŚĆ Z KAMERĄ")));
             return;
         }
 
@@ -2349,9 +2352,9 @@ void MainWindow::createWidgetUstawienia()
         // oba na wszelki wypadek, zamiast zakładać konkretny format
         // zewnętrznego narzędzia.
         if (listfps.size() < 2 || listresolution.size() < 2) {
-            QMessageBox::information(nullptr,"INFO",
-                "Nie udało się odczytać parametrów strumienia (fps/rozdzielczość).\n"
-                "Spróbuj ponownie za chwilę.");
+            QMessageBox::information(nullptr,tr("INFO"),QString(
+                "%1\n"
+                "%2").arg(tr("Nie udało się odczytać parametrów strumienia (fps/rozdzielczość)."),tr("Spróbuj ponownie za chwilę.")));
             return;
         }
         QSize videoResolution(listresolution[0].toInt(), listresolution[1].toInt());
@@ -2400,9 +2403,9 @@ void MainWindow::createWidgetUstawienia()
 
             bool ok = zapiszKameryDat(adres);
             if(ok){
-                QMessageBox::information(nullptr,"INFO","STREFY ZAPISANE PRAWIDŁOWO");
+                QMessageBox::information(nullptr,tr("INFO"),tr("STREFY ZAPISANE PRAWIDŁOWO"));
             }else {
-                QMessageBox::information(nullptr,"UWAGA","STREFY NIE ZAPISANE");
+                QMessageBox::information(nullptr,tr("UWAGA"),tr("STREFY NIE ZAPISANE"));
             }
         });
         connect(btnUsun, &QPushButton::clicked, widgetStrefy, [this,tabela,labelPlay,videoResolution](){
@@ -2613,7 +2616,7 @@ void MainWindow::createWidgetUstawienia()
             || lineEditAdres->text().trimmed().isEmpty()
             || lineEditPath->text().trimmed().isEmpty()){
             lineEditNazwa->setFocus();
-            QMessageBox::information(nullptr,"UEAGA","POLA:\n-KAMERA\n-ADRES KAMERY\nNIE MOGĄ BYĆ PUSTE");
+            QMessageBox::information(nullptr,tr("UWAGA"),QString("%1:\n-%2\n-%3\n%4").arg(tr("POLA"),tr("KAMERA"),tr("ADRES KAMERY"),tr("NIE MOGĄ BYĆ PUSTE")));
             return;
         }
         int row = labelDK02->text().toInt();
@@ -2623,10 +2626,17 @@ void MainWindow::createWidgetUstawienia()
                 QString nazwa = table->item(x,1)->text();
                 if(nazwa == lineEditNazwa->text().trimmed())
                 {
-                    QMessageBox::information(nullptr,"UWAGA",R"(
-                        KAMERA O TEJ NAZWIE
-                        JUŻ ISTNIEJE
-                        ZMIEŃ NAZWĘ KAMERY)");
+                    // QMessageBox::information(nullptr,tr("UWAGA"),tr(R"(
+                    //     KAMERA O TEJ NAZWIE
+                    //     JUŻ ISTNIEJE
+                    //     ZMIEŃ NAZWĘ KAMERY)"));
+                    QMessageBox::information(
+                        nullptr,
+                        tr("UWAGA"),
+                        tr(R"(KAMERA O TEJ NAZWIE
+JUŻ ISTNIEJE
+ZMIEŃ NAZWĘ KAMERY)")
+                        );
                     return;
                 }
             }
@@ -2650,10 +2660,10 @@ void MainWindow::createWidgetUstawienia()
                                                    ? table->item(x, 1)->text()
                                                    : QString();
                     QMessageBox::information(
-                        nullptr, "UWAGA",
-                        QString("KAMERA O TAKIM ADRESIE JUŻ ISTNIEJE\n"
-                                "(\"%1\")\n"
-                                "ZMIEŃ ADRES KAMERY").arg(istniejacaNazwa));
+                        nullptr, tr("UWAGA"),
+                        QString("%1\n"
+                                "(\"%2\")\n"
+                                "%3").arg(tr("KAMERA O TAKIM ADRESIE JUŻ ISTNIEJE"),istniejacaNazwa,tr("ZMIEŃ ADRES KAMERY")));
                     return;
                 }
             }
@@ -2661,7 +2671,7 @@ void MainWindow::createWidgetUstawienia()
         qDebug()<<"1";
         auto [ok, resolution, fps] = ffprobeTest(lineEditAdres->text().trimmed());
         if(!ok){
-            QMessageBox::information(nullptr,"INFO","SPRAWDŹ:\n- POPRAWNOŚĆ STRUMIENIA\n- ŁĄCZNOŚĆ Z KAMERĄ");
+            QMessageBox::information(nullptr,tr("INFO"),QString("%1:\n- %2\n- %3").arg(tr("SPRAWDŹ"),tr("POPRAWNOŚĆ STRUMIENIA"),tr("ŁĄCZNOŚĆ Z KAMERĄ")));
             return;
         }
         qDebug()<<"2";
@@ -2680,9 +2690,9 @@ qDebug()<<"3";
         testWidget->setGeometry(0, 0, x, y);
         QVBoxLayout *layoutTestWidget = new QVBoxLayout(testWidget);
         layoutTestWidget->setContentsMargins(30,30,30,30);
-        QLabel *label = new QLabel("POCZEKAJ\n"
-                "JEŚLI OBRAZ NIE POKAŻE SIĘ W CIĄGU PARU SEKUND\n"
-                "SPRAWDŹ ADRES STRUMIENIA",testWidget);
+        QLabel *label = new QLabel(QString("%1\n"
+                "%2\n"
+                "%3").arg(tr("POCZEKAJ"),tr("JEŚLI OBRAZ NIE POKAŻE SIĘ W CIĄGU PARU SEKUND"),tr("SPRAWDŹ ADRES STRUMIENIA")),testWidget);
         QFont font = label->font();
         font.setPixelSize(24);
         label->setFont(font);
@@ -2932,11 +2942,11 @@ bool MainWindow::czytajKameryDat(const QString &adres)
     }
     if (reply->error() != QNetworkReply::NoError) {
         qDebug() << reply->errorString();
-        QMessageBox::information( this, "INFO", reply->errorString() +
-                    "\nPRZYCZYNY:\n"
-                    "- zły adres serwera\n"
-                    "- brak internetu\n"
-                    "- serwer nie uruchomiony" );
+        QMessageBox::information( this, tr("INFO"), QString("%1"
+                    "\n%2:\n"
+                    "- %3\n"
+                    "- %4\n"
+                    "- %5" ).arg(reply->errorString(),tr("PRZYCZYNY"),tr("zły adres serwera"),tr("brak internetu"),tr("serwer nie uruchomiony")));
         reply->deleteLater();
         ItemModel->clear();
         return false;
@@ -3035,16 +3045,11 @@ bool MainWindow::zapiszKameryDat(const QString &adres)
     if (reply->error() != QNetworkReply::NoError) {
 
         qDebug() << "Błąd zapisu:" << reply->errorString();
-
-        QMessageBox::information(
-            this,
-            "INFO",
-            reply->errorString() +
-                "\nPRZYCZYNY:\n"
-                "- zły adres serwera\n"
-                "- brak internetu\n"
-                "- serwer nie uruchomiony"
-            );
+        QMessageBox::information( this, tr("INFO"), QString("%1"
+            "\n%2:\n"
+            "- %3\n"
+            "- %4\n"
+            "- %5" ).arg(reply->errorString(),tr("PRZYCZYNY"),tr("zły adres serwera"),tr("brak internetu"),tr("serwer nie uruchomiony")));
 
         reply->deleteLater();
         return false;
@@ -3146,8 +3151,8 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
                 qDebug() << "Serwer HTTP wystartował na porcie" << httpSerwer->serverPort();
                 mtx->ensureInstalled();
             } else {
-                QMessageBox::warning(this, "Błąd serwera HTTP",
-                    "Nie udało się uruchomić serwera HTTP (port może być zajęty).");
+                QMessageBox::warning(this, tr("Błąd serwera HTTP"),
+                    tr("Nie udało się uruchomić serwera HTTP (port może być zajęty)."));
             }
         } else {
             httpSerwer->stop();
@@ -3183,13 +3188,13 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
             toolbar->show();
             });
     }else if(item->data(Qt::UserRole).toString() == "USTAWIENIA"){
-        qDebug()<< "tutaj będę pisał";
         QDialog *dialog = new QDialog();
         dialog->setAttribute(Qt::WA_DeleteOnClose);
-        dialog->setWindowTitle("ADRES SERWERA");
+        dialog->setWindowTitle(tr("POŁĄCZ Z SERWEREM"));
         QVBoxLayout *layoutDialog = new QVBoxLayout(dialog);
         QHBoxLayout *layouth1 = new QHBoxLayout();
-        QLabel *labelAdres = new QLabel("ADRES IP SERWERA:",dialog);
+        QLabel *labelAdres = new QLabel(tr("ADRES IP SERWERA:"),dialog);
+        labelAdres->setAlignment(Qt::AlignCenter);
         labelAdres->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         labelAdres->setStyleSheet(stylesheetLabelSelectedBlue);
         czytajSerweryDat();
@@ -3209,11 +3214,11 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         layouth1->addWidget(labelAdres,1);
         layouth1->addWidget(comboBox,1);
         QHBoxLayout *layouth2 = new QHBoxLayout();
-        QPushButton *btnOk = new QPushButton("OK",dialog);
+        QPushButton *btnOk = new QPushButton(tr("OK"),dialog);
         btnOk->setIcon(QIcon(":/icons/ok.svg"));
         btnOk->setIconSize(QSize(32,32));
         btnOk->setStyleSheet(stylesheetPushButton);
-        QPushButton *btnAnuluj = new QPushButton("ANULUJ",dialog);
+        QPushButton *btnAnuluj = new QPushButton(tr("ANULUJ"),dialog);
         btnAnuluj->setIcon(QIcon(":/icons/anuluj.svg"));
         btnAnuluj->setIconSize(QSize(32,32));
         btnAnuluj->setStyleSheet(stylesheetPushButtonRed);
@@ -3230,7 +3235,7 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
                      createWidgetUstawienia(); dialog->close();
                 }
                 else{
-                     QMessageBox::information( dialog, "INFO", "Serwer działa, ale nie znaleziono żadnych kamer." );
+                     QMessageBox::information( dialog, tr("INFO"), tr("Serwer działa, ale nie znaleziono żadnych kamer.") );
                 }
             }
         });
@@ -3246,20 +3251,20 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
 
             qDebug()<<"PRZECZYTAŁEM";
         }else{
-            QMessageBox::information(nullptr,"UWAGA",
-                "NIE MOŻNA OTWORZYĆ PLIKU\nERROR:"+file.errorString());
+            QMessageBox::information(nullptr,tr("UWAGA"),
+                QString("%1\n%2: %3").arg(tr("NIE MOŻNA OTWORZYĆ PLIKU"),tr("ERROR"),file.errorString()));
             return;
         }
         file.close();
 
         QDialog *dialog = new QDialog(this);
         dialog->setFixedWidth(400);
-        dialog->setWindowTitle("TWÓJ TOKEN:");
+        dialog->setWindowTitle(tr("TWÓJ TOKEN:"));
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         QVBoxLayout *dialoglayout = new QVBoxLayout(dialog);
         QLabel *label = new QLabel(dialog);
-        label->setText("token jest potrzebny do logowania\nze zdalnego komputera\n"
-                       "do tego serwera");
+        label->setText(QString("%1\n%2\n"
+                "%3").arg(tr("token jest potrzebny do logowania"),tr("ze zdalnego komputera"),tr("do tego serwera")));
         QLineEdit *lineEdit = new QLineEdit();
         lineEdit->setAlignment(Qt::AlignCenter);
         lineEdit->setReadOnly(true);
@@ -3270,11 +3275,11 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         lineEdit->setFont(font);
 
         QHBoxLayout *layouth1 = new QHBoxLayout();
-        QPushButton *btnSkopiuj = new QPushButton("SKOPIUJ", dialog);
+        QPushButton *btnSkopiuj = new QPushButton(tr("SKOPIUJ"), dialog);
         btnSkopiuj->setIcon(QIcon(":/icons/kopiuj.svg"));
         btnSkopiuj->setIconSize(QSize(24,24));
         btnSkopiuj->setStyleSheet(stylesheetPushButton);
-        QPushButton *btnZamknij = new QPushButton("ZAMKNIJ", dialog);
+        QPushButton *btnZamknij = new QPushButton(tr("ZAMKNIJ"), dialog);
         btnZamknij->setIcon(QIcon(":/icons/zamknij.svg"));
         btnZamknij->setIconSize(QSize(24,24));
         btnZamknij->setStyleSheet(stylesheetPushButtonRed);
@@ -3296,7 +3301,7 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
                 QGuiApplication::clipboard()->setText(lineEdit->text());
                 QPoint globalPos = btnSkopiuj->mapToGlobal(QPoint(btnSkopiuj->width() / 2, -30));
             //    QToolTip::showText(globalPos, "Skopiowano!",nullptr);
-                QLabel *dymek = new QLabel(" Skopiowano! ", dialog, Qt::ToolTip | Qt::BypassWindowManagerHint);
+                QLabel *dymek = new QLabel(tr(" Skopiowano! "), dialog, Qt::ToolTip | Qt::BypassWindowManagerHint);
                 QPointer<QLabel> safeDymek = dymek;
                 dymek->move(globalPos);
                 dymek->show();
@@ -3308,7 +3313,7 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
                 });
             }else{
                 QPoint globalPos = btnSkopiuj->mapToGlobal(QPoint(btnSkopiuj->width() / 2, -30));
-                QLabel *dymek = new QLabel(" Pole jest puste\nnie skopiowano ", nullptr, Qt::ToolTip | Qt::BypassWindowManagerHint);
+                QLabel *dymek = new QLabel((QString(" %1\n%2 ").arg(tr("Pole jest puste"),tr("nie skopiowano"))), nullptr, Qt::ToolTip | Qt::BypassWindowManagerHint);
                 dymek->move(globalPos);
                 dymek->show();
                 QTimer::singleShot(3000, [dymek]() {
@@ -3348,9 +3353,9 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         // czytelnym komunikatem.
         QString desktopDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         if (desktopDir.isEmpty()) {
-            QMessageBox::warning(this, "UWAGA",
-                "Nie udało się ustalić katalogu Pulpitu w tym systemie.\n"
-                "Skrót nie został utworzony.");
+            QMessageBox::warning(this, tr("UWAGA"),
+                QString("%1\n"
+                        "%2").arg(tr("Nie udało się ustalić katalogu Pulpitu w tym systemie."),tr("Skrót nie został utworzony.")));
             return;
         }
         QString desktopPath = desktopDir + nazwaPliku;  //"/MultiCamIp.desktop";
@@ -3359,8 +3364,8 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         }
         QFile file(desktopPath);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
-            QMessageBox::warning(this, "UWAGA",
-                "Nie udało się zapisać skrótu:\n" + desktopPath);
+            QMessageBox::warning(this, tr("UWAGA"),
+                                 QString("%1\n%2").arg(tr("Nie udało się zapisać skrótu:"),desktopPath));
             return;
         }
         QTextStream DesktopIkon(&file);
@@ -3396,8 +3401,8 @@ void MainWindow::onMenuItemSerwerClicked(QListWidgetItem *item)
         QProcess::startDetached("gio", QStringList() << "set" << "-t" << "string" << desktopPath << "metadata::trusted" << "true");
         #endif
 
-        QMessageBox::information(this, "OK",
-            "Skrót do pulpitu utworzony:\n" + desktopPath);
+        QMessageBox::information(this, tr("INFO"),
+                                 QString("%1:\n%2").arg(tr("Skrót do pulpitu utworzony"),desktopPath));
     }
 }
 

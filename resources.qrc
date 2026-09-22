@@ -28,5 +28,6 @@
         <file>icons/liveserwery.svg</file>
         <file>icons/token.svg</file>
         <file>icons/kopiuj.svg</file>
+	<file>translations/multicamip_en.qm</file>
     </qresource>
 </RCC>

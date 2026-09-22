@@ -42,6 +42,8 @@ RESOURCES += \
 
 DISTFILES +=
 
+TRANSLATIONS += translations/multicamip_en.ts
+
 # CONFIG(debug, debug|release) {
 #     QMAKE_CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
 #     QMAKE_LFLAGS += -fsanitize=address

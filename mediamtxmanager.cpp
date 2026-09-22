@@ -105,7 +105,7 @@ void MediaMTXManager::pobierzUrlMtx()
                 // Błąd połączenia
                 if (reply->error() != QNetworkReply::NoError) {
                     qDebug() << "Błąd sieci:" << reply->errorString();
-                    QMessageBox::information(nullptr,"INFO","Błąd sieci:" + reply->errorString());
+                    QMessageBox::information(nullptr,tr("INFO"),QString(tr("Błąd sieci: %1")).arg(reply->errorString()));
                     sprzatnij();
                     return;
                 }
@@ -118,7 +118,7 @@ void MediaMTXManager::pobierzUrlMtx()
 
                 if (parseError.error != QJsonParseError::NoError) {
                     qDebug() << "Błąd JSON:" << parseError.errorString();
-                    QMessageBox::information(nullptr,"INFO","Błąd sieci:" + parseError.errorString());
+                    QMessageBox::information(nullptr,tr("INFO"),QString(tr("Błąd JSON: %1")).arg(parseError.errorString()));
                     sprzatnij();
                     return;
                 }
@@ -314,7 +314,7 @@ void MediaMTXManager::startMtx()
     else
         qDebug() << "MediaMTX uruchamiam.";
     }else{
-        QMessageBox::information(nullptr,"INFO","SERWER HTTP NIE DZIAŁA");
+        QMessageBox::information(nullptr,tr("INFO"),tr("SERWER HTTP NIE DZIAŁA"));
     }
 }
 
@@ -342,8 +342,8 @@ void MediaMTXManager::pobieramMtxmanager(const QString &url, const QString &zapi
     if (!file->open(QIODevice::WriteOnly))
     {
         QMessageBox::critical(nullptr,
-                              "Błąd",
-                              "Nie można utworzyć pliku:\n" + zapisz);
+                              tr("Błąd"),
+                              QString(tr("Nie można utworzyć pliku:\n %1")).arg(zapisz));
 
         file->deleteLater();
         reply->abort();
@@ -353,13 +353,13 @@ void MediaMTXManager::pobieramMtxmanager(const QString &url, const QString &zapi
     }
 
     QProgressDialog *progress =
-        new QProgressDialog("Pobieranie MediaMTX...",
-                            "Anuluj",
+        new QProgressDialog(tr("Pobieranie MediaMTX..."),
+                            tr("Anuluj"),
                             0,
                             100,
                             mainwindow);
-
-    progress->setWindowTitle("Pobieranie");
+    progress->setFixedWidth(400);
+    progress->setWindowTitle(tr("Pobieranie"));
     progress->setWindowModality(Qt::ApplicationModal);
     progress->setMinimumDuration(0);
     progress->setAutoClose(true);
@@ -378,7 +378,7 @@ void MediaMTXManager::pobieramMtxmanager(const QString &url, const QString &zapi
                 progress->setValue(int(received * 100 / total));
 
                 progress->setLabelText(
-                    QString("Pobrano %1 / %2 MB")
+                    QString(tr("Pobrano %1 / %2 MB"))
                         .arg(received / 1024.0 / 1024.0, 0, 'f', 2)
                         .arg(total / 1024.0 / 1024.0, 0, 'f', 2));
             });
@@ -401,15 +401,15 @@ void MediaMTXManager::pobieramMtxmanager(const QString &url, const QString &zapi
                     progress->setValue(100);
                     rozpakuj(zapisz,installDirMtx);
                     QMessageBox::information(nullptr,
-                                             "Informacja",
-                                             "Plik został pobrany.");
+                                             tr("Informacja"),
+                                             tr("Plik został pobrany."));
                 }
                 else
                 {
                     file->remove();
 
                     QMessageBox::critical(nullptr,
-                                          "Błąd",
+                                          tr("Błąd"),
                                           reply->errorString());
                 }
 

@@ -4,6 +4,7 @@
 #include <QScreen>
 #include <QTranslator>
 #include <QLibraryInfo>
+#include <QSettings>
 
 int main(int argc, char *argv[])
 {
@@ -30,8 +31,15 @@ int main(int argc, char *argv[])
     }
     )");
 
-    QTranslator translator;
+    QSettings settings("MojaFirma", "MultiCamIp");
+    QString jezyk = settings.value("jezyk/kod", "pl").toString();
+    QTranslator appTranslator;
+    if (jezyk != "pl") {  // "pl" nie potrzebuje pliku .qm, to język źródłowy
+        if (appTranslator.load(":/translations/multicamip_" + jezyk))
+            a.installTranslator(&appTranslator);
+    }
 
+    QTranslator translator;
     if (translator.load(
             QLocale("pl_PL"),
             "qtbase",
@@ -40,6 +48,7 @@ int main(int argc, char *argv[])
     {
         a.installTranslator(&translator);
     }
+
     MainWindow w;
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
 
