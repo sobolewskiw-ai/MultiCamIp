@@ -283,7 +283,7 @@ FindNewCamera::FindNewCamera(QWidget *parent)
     // ===============================
     // --- CENTRALNY UKŁAD ---
     // ===============================
-    centralLayout->addLayout(layoutLewy,3);
+    centralLayout->addLayout(layoutLewy,5);
     centralLayout->addWidget(labelPlay,7);
     //centralLayout->setStretch(0, 30);  //to samo co: centralLayout->addLayout(layoutLewy,3);
     //centralLayout->setStretch(1, 70);  //to samo co: centralLayout->addWidget(labelPlay,7);
@@ -326,7 +326,7 @@ FindNewCamera::FindNewCamera(QWidget *parent)
         }
         buttonZapisz->setEnabled(false);
         buttonPlay->setEnabled(true);
-        buttonPlay->setText("Play");
+        buttonPlay->setText(tr("Play"));
     });
 
     connect(&timer, &QTimer::timeout, this, &FindNewCamera::updateFrame);
