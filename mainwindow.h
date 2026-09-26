@@ -48,6 +48,8 @@ private:
     // na serwerze HTTP wskazanym przez url - dla własnego (lokalnego)
     // serwera token jest znany automatycznie, dla zdalnego trzeba go podać
     // ręcznie (zapamiętywany w QSettings). Patrz httpserwer.h.
+    QTranslator *apptranslator = nullptr;
+    QTranslator *translator = nullptr;
     QString resolveAuthTokenForHost(const class QUrl &url);
     void setupUi();
     void ukryjPokazPanelSerwer();

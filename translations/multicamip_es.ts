@@ -276,217 +276,234 @@ Intento %1 en %2 segundos</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="260"/>
+        <location filename="../mainwindow.cpp" line="290"/>
+        <location filename="../mainwindow.cpp" line="1229"/>
         <source>Kliknij %1 w pasku narzędzi, aby otworzyć wysuwany panel.</source>
         <extracomment>%1 zostanie zastąpione stylizowanym napisem &quot;☰ Menu&quot; (HTML) - nie tłumacz/nie usuwaj %1, możesz go dowolnie przestawić w zdaniu</extracomment>
         <translation>Haga clic en %1 w la barra de herramientas para abrir el panel desplegable.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="284"/>
-        <location filename="../mainwindow.cpp" line="338"/>
-        <location filename="../mainwindow.cpp" line="1774"/>
+        <location filename="../mainwindow.cpp" line="314"/>
+        <location filename="../mainwindow.cpp" line="371"/>
+        <location filename="../mainwindow.cpp" line="1227"/>
+        <location filename="../mainwindow.cpp" line="1230"/>
+        <location filename="../mainwindow.cpp" line="1918"/>
         <source>SERWER</source>
         <translation>SERVIDOR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="351"/>
-        <location filename="../mainwindow.cpp" line="3176"/>
+        <location filename="../mainwindow.cpp" line="384"/>
+        <location filename="../mainwindow.cpp" line="1232"/>
+        <location filename="../mainwindow.cpp" line="1237"/>
+        <location filename="../mainwindow.cpp" line="1266"/>
+        <location filename="../mainwindow.cpp" line="1271"/>
+        <location filename="../mainwindow.cpp" line="3320"/>
         <source>START SERWER RTSP I HTTP</source>
         <translation>INICIAR SERVIDOR RTSP Y HTTP</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="357"/>
+        <location filename="../mainwindow.cpp" line="390"/>
+        <location filename="../mainwindow.cpp" line="1240"/>
         <source>SZUKAJ KAMER PO ADRESIE IP</source>
         <translation>BUSCAR CÁMARAS POR DIRECCIÓN IP</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="363"/>
+        <location filename="../mainwindow.cpp" line="396"/>
+        <location filename="../mainwindow.cpp" line="1241"/>
         <source>USTAWIENIA KAMER</source>
         <translation>CONFIGURACIÓN DE CÁMARAS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="369"/>
+        <location filename="../mainwindow.cpp" line="402"/>
+        <location filename="../mainwindow.cpp" line="1242"/>
         <source>TOKEN HTTP</source>
         <translation>TOKEN HTTP</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="375"/>
+        <location filename="../mainwindow.cpp" line="408"/>
+        <location filename="../mainwindow.cpp" line="1243"/>
         <source>DODAJ IKONĘ DO PULPITU</source>
         <translation>AÑADIR ICONO AL ESCRITORIO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="387"/>
-        <location filename="../mainwindow.cpp" line="1033"/>
-        <location filename="../mainwindow.cpp" line="1093"/>
+        <location filename="../mainwindow.cpp" line="420"/>
+        <location filename="../mainwindow.cpp" line="1069"/>
+        <location filename="../mainwindow.cpp" line="1132"/>
+        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1249"/>
+        <location filename="../mainwindow.cpp" line="1252"/>
         <source>Ukryj</source>
         <translation>Ocultar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="396"/>
+        <location filename="../mainwindow.cpp" line="429"/>
+        <location filename="../mainwindow.cpp" line="1245"/>
         <source>☰ PODGLĄD</source>
         <translation>☰ VISTA PREVIA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="445"/>
+        <location filename="../mainwindow.cpp" line="481"/>
+        <location filename="../mainwindow.cpp" line="1246"/>
         <source>PODGLĄD</source>
         <translation>VISTA PREVIA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="459"/>
+        <location filename="../mainwindow.cpp" line="495"/>
+        <location filename="../mainwindow.cpp" line="1247"/>
         <source>LIVE SERWERY</source>
         <translation>SERVIDORES EN VIVO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="473"/>
+        <location filename="../mainwindow.cpp" line="509"/>
         <source>SERWERY LIVE STREAM</source>
         <translation>SERVIDORES DE TRANSMISIÓN EN VIVO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="483"/>
+        <location filename="../mainwindow.cpp" line="519"/>
         <source>Lp.</source>
         <translation>Nro.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="483"/>
+        <location filename="../mainwindow.cpp" line="519"/>
         <source>Nazwa serwera</source>
         <translation>Nombre del servidor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="483"/>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="519"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Adres</source>
         <translation>Dirección</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="483"/>
+        <location filename="../mainwindow.cpp" line="519"/>
         <source>Status</source>
         <translation>Estado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="640"/>
+        <location filename="../mainwindow.cpp" line="676"/>
         <source>➕ Dodaj</source>
         <translation>➕ Añadir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="641"/>
+        <location filename="../mainwindow.cpp" line="677"/>
         <source>🗑 Usuń</source>
         <translation>🗑 Eliminar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="642"/>
+        <location filename="../mainwindow.cpp" line="678"/>
         <source>✏ Modyfikuj</source>
         <translation>✏ Modificar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="643"/>
+        <location filename="../mainwindow.cpp" line="679"/>
         <source>🟢 Połącz</source>
         <translation>🟢 Conectar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="644"/>
+        <location filename="../mainwindow.cpp" line="680"/>
         <source>🔴 Rozłącz</source>
         <translation>🔴 Desconectar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="645"/>
-        <location filename="../mainwindow.cpp" line="741"/>
+        <location filename="../mainwindow.cpp" line="681"/>
+        <location filename="../mainwindow.cpp" line="777"/>
         <source>💾 Zapisz</source>
         <translation>💾 Guardar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="646"/>
+        <location filename="../mainwindow.cpp" line="682"/>
         <source>✖ Zamknij</source>
         <translation>✖ Cerrar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="684"/>
+        <location filename="../mainwindow.cpp" line="720"/>
         <source>Id serwera:</source>
         <translation>ID servidor:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="703"/>
+        <location filename="../mainwindow.cpp" line="739"/>
         <source>LOKALIZACJA SERWERA</source>
         <translation>UBICACIÓN DEL SERVIDOR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="722"/>
+        <location filename="../mainwindow.cpp" line="758"/>
         <source>ADRES IP SERWERA</source>
         <translation>DIRECCIÓN IP DEL SERVIDOR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="744"/>
+        <location filename="../mainwindow.cpp" line="780"/>
         <source>✖ ANULUJ</source>
         <translation>✖ CANCELAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="772"/>
-        <location filename="../mainwindow.cpp" line="894"/>
-        <location filename="../mainwindow.cpp" line="1539"/>
-        <location filename="../mainwindow.cpp" line="1541"/>
-        <location filename="../mainwindow.cpp" line="1668"/>
-        <location filename="../mainwindow.cpp" line="1672"/>
-        <location filename="../mainwindow.cpp" line="1716"/>
-        <location filename="../mainwindow.cpp" line="1750"/>
-        <location filename="../mainwindow.cpp" line="2137"/>
-        <location filename="../mainwindow.cpp" line="2290"/>
-        <location filename="../mainwindow.cpp" line="2371"/>
-        <location filename="../mainwindow.cpp" line="2422"/>
-        <location filename="../mainwindow.cpp" line="2690"/>
-        <location filename="../mainwindow.cpp" line="2961"/>
-        <location filename="../mainwindow.cpp" line="3064"/>
-        <location filename="../mainwindow.cpp" line="3254"/>
-        <location filename="../mainwindow.cpp" line="3420"/>
+        <location filename="../mainwindow.cpp" line="808"/>
+        <location filename="../mainwindow.cpp" line="930"/>
+        <location filename="../mainwindow.cpp" line="1683"/>
+        <location filename="../mainwindow.cpp" line="1685"/>
+        <location filename="../mainwindow.cpp" line="1812"/>
+        <location filename="../mainwindow.cpp" line="1816"/>
+        <location filename="../mainwindow.cpp" line="1860"/>
+        <location filename="../mainwindow.cpp" line="1894"/>
+        <location filename="../mainwindow.cpp" line="2281"/>
+        <location filename="../mainwindow.cpp" line="2434"/>
+        <location filename="../mainwindow.cpp" line="2515"/>
+        <location filename="../mainwindow.cpp" line="2566"/>
+        <location filename="../mainwindow.cpp" line="2834"/>
+        <location filename="../mainwindow.cpp" line="3105"/>
+        <location filename="../mainwindow.cpp" line="3208"/>
+        <location filename="../mainwindow.cpp" line="3398"/>
+        <location filename="../mainwindow.cpp" line="3564"/>
         <source>INFO</source>
         <translation>INFO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="772"/>
+        <location filename="../mainwindow.cpp" line="808"/>
         <source>WYPEŁNIJ PUSTE POLA</source>
         <translation>RELLENE LOS CAMPOS VACÍOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="832"/>
-        <location filename="../mainwindow.cpp" line="841"/>
-        <location filename="../mainwindow.cpp" line="850"/>
+        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="877"/>
+        <location filename="../mainwindow.cpp" line="886"/>
         <source>Błąd</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="832"/>
+        <location filename="../mainwindow.cpp" line="868"/>
         <source>Niepoprawny adres IPv4.</source>
         <translation>Dirección IPv4 no válida.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="842"/>
+        <location filename="../mainwindow.cpp" line="878"/>
         <source>Nazwa hosta nie może zaczynać się od samych cyfr.</source>
         <translation>El nombre de host no puede empezar solo con dígitos.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="850"/>
+        <location filename="../mainwindow.cpp" line="886"/>
         <source>Wprowadź poprawny adres IP lub nazwę hosta.</source>
         <translation>Ingrese una dirección IP o nombre de host válidos.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="894"/>
+        <location filename="../mainwindow.cpp" line="930"/>
         <source>WYBIERZ WIERSZ</source>
         <translation>SELECCIONE UNA FILA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="952"/>
-        <location filename="../mainwindow.cpp" line="1983"/>
-        <location filename="../mainwindow.cpp" line="2140"/>
-        <location filename="../mainwindow.cpp" line="2424"/>
-        <location filename="../mainwindow.cpp" line="2635"/>
-        <location filename="../mainwindow.cpp" line="2651"/>
-        <location filename="../mainwindow.cpp" line="2679"/>
-        <location filename="../mainwindow.cpp" line="3270"/>
-        <location filename="../mainwindow.cpp" line="3372"/>
-        <location filename="../mainwindow.cpp" line="3383"/>
+        <location filename="../mainwindow.cpp" line="988"/>
+        <location filename="../mainwindow.cpp" line="2127"/>
+        <location filename="../mainwindow.cpp" line="2284"/>
+        <location filename="../mainwindow.cpp" line="2568"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
+        <location filename="../mainwindow.cpp" line="2795"/>
+        <location filename="../mainwindow.cpp" line="2823"/>
+        <location filename="../mainwindow.cpp" line="3414"/>
+        <location filename="../mainwindow.cpp" line="3516"/>
+        <location filename="../mainwindow.cpp" line="3527"/>
         <source>UWAGA</source>
         <translation>ATENCIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="952"/>
+        <location filename="../mainwindow.cpp" line="988"/>
         <source>NIE MOŻNA POŁĄCZYĆ Z SERWEREM:
 %1
 1) sprawdź internet
@@ -501,50 +518,54 @@ Intento %1 en %2 segundos</translation>
 8554 y 8080 a %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="984"/>
+        <location filename="../mainwindow.cpp" line="1020"/>
+        <location filename="../mainwindow.cpp" line="1248"/>
         <source>WYBIERZ</source>
         <translation>SELECCIONAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1043"/>
+        <location filename="../mainwindow.cpp" line="1079"/>
+        <location filename="../mainwindow.cpp" line="1250"/>
         <source>☰ NAGRANIA</source>
         <translation>☰ GRABACIONES</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1088"/>
+        <location filename="../mainwindow.cpp" line="1127"/>
+        <location filename="../mainwindow.cpp" line="1251"/>
         <source>NAGRANIA</source>
         <translation>GRABACIONES</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1108"/>
+        <location filename="../mainwindow.cpp" line="1148"/>
+        <location filename="../mainwindow.cpp" line="1253"/>
         <source>☰ JĘZYK: </source>
         <translation>☰ IDIOMA: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1348"/>
-        <location filename="../mainwindow.cpp" line="1728"/>
+        <location filename="../mainwindow.cpp" line="1492"/>
+        <location filename="../mainwindow.cpp" line="1872"/>
         <source>KAMERA Nr: %1
 BRAK OBRAZU</source>
         <translation>CÁMARA N.º %1
 SIN SEÑAL DE VÍDEO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1539"/>
+        <location filename="../mainwindow.cpp" line="1683"/>
         <source>Lista serwerów zapisana</source>
         <translation>Lista de servidores guardada</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1541"/>
+        <location filename="../mainwindow.cpp" line="1685"/>
         <source>Lista serwerów nie zapisana</source>
         <translation>Lista de servidores no guardada</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1668"/>
+        <location filename="../mainwindow.cpp" line="1812"/>
         <source>WYBIERZ PODZIAŁ SIATKI KAMER</source>
         <translation>SELECCIONAR DISEÑO DE CUADRÍCULA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1673"/>
+        <location filename="../mainwindow.cpp" line="1817"/>
         <source>BRAK WOLNEGO OKNA
  (OKNA: %1,LICZBA KAMER: %2)
 WYBIERZ SIATKĘ DLA %2 KAMER</source>
@@ -553,271 +574,271 @@ WYBIERZ SIATKĘ DLA %2 KAMER</source>
 SELECCIONE UNA CUADRÍCULA PARA %2 CÁMARAS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1717"/>
+        <location filename="../mainwindow.cpp" line="1861"/>
         <source>Ta kamera nie odtwarza (okna: %1, kamera: %2)</source>
         <translation>Esta cámara no reproduce (ventanas: %1, cámara: %2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1750"/>
+        <location filename="../mainwindow.cpp" line="1894"/>
         <source>Nie odczytałem zapisanych kamer</source>
         <translation>No se pudieron leer las cámaras guardadas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1774"/>
+        <location filename="../mainwindow.cpp" line="1918"/>
         <source>KAMERY:</source>
         <translation>CÁMARAS:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1774"/>
-        <location filename="../mainwindow.cpp" line="1831"/>
-        <location filename="../mainwindow.cpp" line="1907"/>
+        <location filename="../mainwindow.cpp" line="1918"/>
+        <location filename="../mainwindow.cpp" line="1975"/>
+        <location filename="../mainwindow.cpp" line="2051"/>
         <source>DODAJ</source>
         <translation>AÑADIR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1774"/>
-        <location filename="../mainwindow.cpp" line="1843"/>
-        <location filename="../mainwindow.cpp" line="2261"/>
+        <location filename="../mainwindow.cpp" line="1918"/>
+        <location filename="../mainwindow.cpp" line="1987"/>
+        <location filename="../mainwindow.cpp" line="2405"/>
         <source>USUŃ</source>
         <translation>ELIMINAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1774"/>
-        <location filename="../mainwindow.cpp" line="1907"/>
+        <location filename="../mainwindow.cpp" line="1918"/>
+        <location filename="../mainwindow.cpp" line="2051"/>
         <source>MODYFIKUJ</source>
         <translation>MODIFICAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Id.</source>
         <translation>Id.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Kamera</source>
         <translation>Cámara</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Rozdzielczość</source>
         <translation>Resolución</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
-        <location filename="../mainwindow.cpp" line="1955"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
+        <location filename="../mainwindow.cpp" line="2099"/>
         <source>fps/s</source>
         <translation>fps/s</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Zapis nagrań do</source>
         <translation>DESTINO DE GRABACIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Ile dni</source>
         <translation>Cuántos días</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Czułość</source>
         <translation>Sensibilidad</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1781"/>
+        <location filename="../mainwindow.cpp" line="1925"/>
         <source>Detekcja</source>
         <translation>Detección</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1827"/>
-        <location filename="../mainwindow.cpp" line="2257"/>
+        <location filename="../mainwindow.cpp" line="1971"/>
+        <location filename="../mainwindow.cpp" line="2401"/>
         <source>ZAPISZ</source>
         <translation>GUARDAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1835"/>
+        <location filename="../mainwindow.cpp" line="1979"/>
         <source>POKAŻ - MODYFIKUJ</source>
         <translation>MOSTRAR - MODIFICAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1839"/>
-        <location filename="../mainwindow.cpp" line="2194"/>
+        <location filename="../mainwindow.cpp" line="1983"/>
+        <location filename="../mainwindow.cpp" line="2338"/>
         <source>STREFY RUCHU</source>
         <translation>ZONAS DE MOVIMIENTO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1847"/>
-        <location filename="../mainwindow.cpp" line="2057"/>
-        <location filename="../mainwindow.cpp" line="2265"/>
-        <location filename="../mainwindow.cpp" line="3237"/>
+        <location filename="../mainwindow.cpp" line="1991"/>
+        <location filename="../mainwindow.cpp" line="2201"/>
+        <location filename="../mainwindow.cpp" line="2409"/>
+        <location filename="../mainwindow.cpp" line="3381"/>
         <source>ANULUJ</source>
         <translation>CANCELAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1907"/>
+        <location filename="../mainwindow.cpp" line="2051"/>
         <source>KAMERY</source>
         <translation>CÁMARAS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1913"/>
+        <location filename="../mainwindow.cpp" line="2057"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1924"/>
+        <location filename="../mainwindow.cpp" line="2068"/>
         <source>KAMERA:</source>
         <translation>CÁMARA:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1934"/>
+        <location filename="../mainwindow.cpp" line="2078"/>
         <source>ADRES STRUMIENIA:</source>
         <translation>DIRECCIÓN DE LA TRANSMISIÓN:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1944"/>
+        <location filename="../mainwindow.cpp" line="2088"/>
         <source>ROZDZIELCZOŚĆ KAMERY:</source>
         <translation>RESOLUCIÓN DE LA CÁMARA:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1966"/>
+        <location filename="../mainwindow.cpp" line="2110"/>
         <source>ZAPIS NAGRAŃ DO:</source>
         <translation>DESTINO DE GRABACIÓN:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1983"/>
+        <location filename="../mainwindow.cpp" line="2127"/>
         <source>WYPEŁNIJ NAJPIERW NAZWĘ KAMERY</source>
         <translation>RELLENE PRIMERO EL NOMBRE DE LA CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1989"/>
+        <location filename="../mainwindow.cpp" line="2133"/>
         <source>Wybierz katalog</source>
         <translation>Seleccionar directorio</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2001"/>
+        <location filename="../mainwindow.cpp" line="2145"/>
         <source>ILE DNI PRZECHOWYWAĆ:</source>
         <translation>DÍAS DE RETENCIÓN:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2013"/>
+        <location filename="../mainwindow.cpp" line="2157"/>
         <source>CZUŁOŚĆ DETEKCJI:</source>
         <translation>SENSIBILIDAD DE DETECCIÓN:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2028"/>
+        <location filename="../mainwindow.cpp" line="2172"/>
         <source>DETEKCJA RUCHU:</source>
         <translation>DETECCIÓN DE MOVIMIENTO:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2034"/>
+        <location filename="../mainwindow.cpp" line="2178"/>
         <source>TAK</source>
         <translation>SÍ</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2035"/>
+        <location filename="../mainwindow.cpp" line="2179"/>
         <source>NIE</source>
         <translation>NO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2051"/>
+        <location filename="../mainwindow.cpp" line="2195"/>
         <source>TEST</source>
         <translation>TEST</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2137"/>
+        <location filename="../mainwindow.cpp" line="2281"/>
         <source>DANE ZAPISANE</source>
         <translation>DATOS GUARDADOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2140"/>
+        <location filename="../mainwindow.cpp" line="2284"/>
         <source>DANE NIE ZAPISANE</source>
         <translation>DATOS NO GUARDADOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2200"/>
+        <location filename="../mainwindow.cpp" line="2344"/>
         <source>USTAWIENIA</source>
         <translation>CONFIGURACIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2200"/>
+        <location filename="../mainwindow.cpp" line="2344"/>
         <source>STREF RUCHU</source>
         <translation>DE ZONAS DE MOVIMIENTO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2231"/>
+        <location filename="../mainwindow.cpp" line="2375"/>
         <source>L.p.</source>
         <translation>Nro.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2231"/>
+        <location filename="../mainwindow.cpp" line="2375"/>
         <source>Nazwa</source>
         <translation>Nombre</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2231"/>
+        <location filename="../mainwindow.cpp" line="2375"/>
         <source>Kamera Id</source>
         <translation>ID cámara</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2290"/>
-        <location filename="../mainwindow.cpp" line="2690"/>
+        <location filename="../mainwindow.cpp" line="2434"/>
+        <location filename="../mainwindow.cpp" line="2834"/>
         <source>SPRAWDŹ</source>
         <translation>COMPROBAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2290"/>
-        <location filename="../mainwindow.cpp" line="2690"/>
+        <location filename="../mainwindow.cpp" line="2434"/>
+        <location filename="../mainwindow.cpp" line="2834"/>
         <source>POPRAWNOŚĆ STRUMIENIA</source>
         <translation>VALIDEZ DE LA TRANSMISIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2290"/>
-        <location filename="../mainwindow.cpp" line="2690"/>
+        <location filename="../mainwindow.cpp" line="2434"/>
+        <location filename="../mainwindow.cpp" line="2834"/>
         <source>ŁĄCZNOŚĆ Z KAMERĄ</source>
         <translation>CONEXIÓN CON LA CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2373"/>
+        <location filename="../mainwindow.cpp" line="2517"/>
         <source>Nie udało się odczytać parametrów strumienia (fps/rozdzielczość).</source>
         <translation>No se pudieron leer los parámetros de la transmisión (fps/resolución).</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2373"/>
+        <location filename="../mainwindow.cpp" line="2517"/>
         <source>Spróbuj ponownie za chwilę.</source>
         <translation>Inténtelo de nuevo en un momento.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2422"/>
+        <location filename="../mainwindow.cpp" line="2566"/>
         <source>STREFY ZAPISANE PRAWIDŁOWO</source>
         <translation>ZONAS GUARDADAS CORRECTAMENTE</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2424"/>
+        <location filename="../mainwindow.cpp" line="2568"/>
         <source>STREFY NIE ZAPISANE</source>
         <translation>ZONAS NO GUARDADAS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2635"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
         <source>POLA</source>
         <translation>CAMPOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2635"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
         <source>KAMERA</source>
         <translation>CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2635"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
         <source>ADRES KAMERY</source>
         <translation>DIRECCIÓN DE LA CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2635"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
         <source>NIE MOGĄ BYĆ PUSTE</source>
         <translation>NO PUEDEN ESTAR VACÍOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2652"/>
+        <location filename="../mainwindow.cpp" line="2796"/>
         <source>KAMERA O TEJ NAZWIE
 JUŻ ISTNIEJE
 ZMIEŃ NAZWĘ KAMERY</source>
@@ -826,161 +847,163 @@ CON ESTE NOMBRE
 CAMBIE EL NOMBRE DE LA CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2682"/>
+        <location filename="../mainwindow.cpp" line="2826"/>
         <source>KAMERA O TAKIM ADRESIE JUŻ ISTNIEJE</source>
         <translation>YA EXISTE UNA CÁMARA CON ESTA DIRECCIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2682"/>
+        <location filename="../mainwindow.cpp" line="2826"/>
         <source>ZMIEŃ ADRES KAMERY</source>
         <translation>CAMBIE LA DIRECCIÓN DE LA CÁMARA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2711"/>
+        <location filename="../mainwindow.cpp" line="2855"/>
         <source>POCZEKAJ</source>
         <translation>ESPERE</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2711"/>
+        <location filename="../mainwindow.cpp" line="2855"/>
         <source>JEŚLI OBRAZ NIE POKAŻE SIĘ W CIĄGU PARU SEKUND</source>
         <translation>SI LA IMAGEN NO APARECE EN UNOS SEGUNDOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2711"/>
+        <location filename="../mainwindow.cpp" line="2855"/>
         <source>SPRAWDŹ ADRES STRUMIENIA</source>
         <translation>VERIFIQUE LA DIRECCIÓN DE LA TRANSMISIÓN</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2965"/>
-        <location filename="../mainwindow.cpp" line="3068"/>
+        <location filename="../mainwindow.cpp" line="3109"/>
+        <location filename="../mainwindow.cpp" line="3212"/>
         <source>PRZYCZYNY</source>
         <translation>CAUSAS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2965"/>
-        <location filename="../mainwindow.cpp" line="3068"/>
+        <location filename="../mainwindow.cpp" line="3109"/>
+        <location filename="../mainwindow.cpp" line="3212"/>
         <source>zły adres serwera</source>
         <translation>dirección de servidor incorrecta</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2965"/>
-        <location filename="../mainwindow.cpp" line="3068"/>
+        <location filename="../mainwindow.cpp" line="3109"/>
+        <location filename="../mainwindow.cpp" line="3212"/>
         <source>brak internetu</source>
         <translation>sin conexión a internet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2965"/>
-        <location filename="../mainwindow.cpp" line="3068"/>
+        <location filename="../mainwindow.cpp" line="3109"/>
+        <location filename="../mainwindow.cpp" line="3212"/>
         <source>serwer nie uruchomiony</source>
         <translation>servidor no iniciado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3166"/>
+        <location filename="../mainwindow.cpp" line="1235"/>
+        <location filename="../mainwindow.cpp" line="1269"/>
+        <location filename="../mainwindow.cpp" line="3310"/>
         <source>ZATRZYMAJ SERWER RTSP i HTTP</source>
         <translation>DETENER EL SERVIDOR RTSP Y HTTP</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3170"/>
+        <location filename="../mainwindow.cpp" line="3314"/>
         <source>Błąd serwera HTTP</source>
         <translation>Error del servidor HTTP</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3171"/>
+        <location filename="../mainwindow.cpp" line="3315"/>
         <source>Nie udało się uruchomić serwera HTTP (port może być zajęty).</source>
         <translation>No se pudo iniciar el servidor HTTP (es posible que el puerto esté ocupado).</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3209"/>
+        <location filename="../mainwindow.cpp" line="3353"/>
         <source>POŁĄCZ Z SERWEREM</source>
         <translation>CONECTAR CON EL SERVIDOR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3212"/>
+        <location filename="../mainwindow.cpp" line="3356"/>
         <source>ADRES IP SERWERA:</source>
         <translation>DIRECCIÓN IP DEL SERVIDOR:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3233"/>
+        <location filename="../mainwindow.cpp" line="3377"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3254"/>
+        <location filename="../mainwindow.cpp" line="3398"/>
         <source>Serwer działa, ale nie znaleziono żadnych kamer.</source>
         <translation>El servidor está en funcionamiento, pero no se encontraron cámaras.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3271"/>
+        <location filename="../mainwindow.cpp" line="3415"/>
         <source>NIE MOŻNA OTWORZYĆ PLIKU</source>
         <translation>NO SE PUEDE ABRIR EL ARCHIVO</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3271"/>
+        <location filename="../mainwindow.cpp" line="3415"/>
         <source>ERROR</source>
         <translation>ERROR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3278"/>
+        <location filename="../mainwindow.cpp" line="3422"/>
         <source>TWÓJ TOKEN:</source>
         <translation>TU TOKEN:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3283"/>
+        <location filename="../mainwindow.cpp" line="3427"/>
         <source>token jest potrzebny do logowania</source>
         <translation>se necesita el token para iniciar sesión</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3283"/>
+        <location filename="../mainwindow.cpp" line="3427"/>
         <source>ze zdalnego komputera</source>
         <translation>desde un equipo remoto</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3283"/>
+        <location filename="../mainwindow.cpp" line="3427"/>
         <source>do tego serwera</source>
         <translation>a este servidor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3294"/>
+        <location filename="../mainwindow.cpp" line="3438"/>
         <source>SKOPIUJ</source>
         <translation>COPIAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3298"/>
+        <location filename="../mainwindow.cpp" line="3442"/>
         <source>ZAMKNIJ</source>
         <translation>CERRAR</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3320"/>
+        <location filename="../mainwindow.cpp" line="3464"/>
         <source> Skopiowano! </source>
         <translation> ¡Copiado! </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3332"/>
+        <location filename="../mainwindow.cpp" line="3476"/>
         <source>Pole jest puste</source>
         <translation>El campo está vacío</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3332"/>
+        <location filename="../mainwindow.cpp" line="3476"/>
         <source>nie skopiowano</source>
         <translation>no se copió</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3374"/>
+        <location filename="../mainwindow.cpp" line="3518"/>
         <source>Nie udało się ustalić katalogu Pulpitu w tym systemie.</source>
         <translation>No se pudo determinar la ubicación de la carpeta Escritorio en este sistema.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3374"/>
+        <location filename="../mainwindow.cpp" line="3518"/>
         <source>Skrót nie został utworzony.</source>
         <translation>No se creó el acceso directo.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3384"/>
+        <location filename="../mainwindow.cpp" line="3528"/>
         <source>Nie udało się zapisać skrótu:</source>
         <translation>No se pudo guardar el acceso directo:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3421"/>
+        <location filename="../mainwindow.cpp" line="3565"/>
         <source>Skrót do pulpitu utworzony</source>
         <translation>Acceso directo en el escritorio creado</translation>
     </message>

@@ -31,23 +31,23 @@ int main(int argc, char *argv[])
     }
     )");
 
-    QSettings settings("MojaFirma", "MultiCamIp");
-    QString jezyk = settings.value("jezyk/kod", "pl").toString();
-    QTranslator appTranslator;
-    if (jezyk != "pl") {  // "pl" nie potrzebuje pliku .qm, to język źródłowy
-        if (appTranslator.load(":/translations/multicamip_" + jezyk))
-            a.installTranslator(&appTranslator);
-    }
+    // QSettings settings("MojaFirma", "MultiCamIp");
+    // QString jezyk = settings.value("jezyk/kod", "pl").toString();
+    // QTranslator appTranslator;
+    // if (jezyk != "pl") {  // "pl" nie potrzebuje pliku .qm, to język źródłowy
+    //     if (appTranslator.load(":/translations/multicamip_" + jezyk))
+    //         a.installTranslator(&appTranslator);
+    // }
 
-    QTranslator translator;
-    if (translator.load(
-            QLocale("pl_PL"),
-            "qtbase",
-            "_",
-            QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-    {
-        a.installTranslator(&translator);
-    }
+    // QTranslator translator;
+    // if (translator.load(
+    //         QLocale("pl_PL"),
+    //         "qtbase",
+    //         "_",
+    //         QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+    // {
+    //     a.installTranslator(&translator);
+    // }
 
     MainWindow w;
     QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();

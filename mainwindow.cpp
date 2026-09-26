@@ -38,6 +38,7 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QToolTip>
+#include <QTranslator>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -47,6 +48,35 @@ MainWindow::MainWindow(QWidget *parent)
     drawerWidgetNagrania(nullptr)
     //toolbar(nullptr)
 {
+    apptranslator = new QTranslator(this);
+    QSettings settings("MojaFirma", "MultiCamIp");
+    QString jezyk = settings.value("jezyk/kod", "pl").toString();
+    QString jezyk_jezyk = jezyk;
+    jezyk_jezyk.append(QString("_%1").arg(jezyk.toUpper()));
+    qDebug()<< jezyk << jezyk_jezyk;
+    QString plik = QString(":/translations/multicamip_%1").arg(jezyk);
+    if(jezyk != "pl"){
+    if (apptranslator->load(plik)) {
+        qApp->installTranslator(apptranslator);
+        qDebug() << "Załadowano tłumaczenie:"
+                 << plik;
+    } else {
+        qDebug() << "NIE MOŻNA ZAŁADOWAĆ:"
+                 << plik;
+        delete apptranslator;
+        apptranslator = nullptr;
+    }
+    }
+    translator = new QTranslator(this);
+    if (translator->load(
+            QLocale(jezyk_jezyk),
+            "qtbase",
+            "_",
+            QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+    {
+        qApp->installTranslator(translator);
+    }
+
     appHomePath = QDir::homePath()+"/AppMultiCam";
     mtx = new MediaMTXManager(this);
     connect(mtx, &MediaMTXManager::urlMtxGotowe,this,
@@ -288,7 +318,7 @@ void MainWindow::setupUi()
     toolbar->addWidget(przerwa);
     QToolButton *toolButtonSerwer = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionSerwer));
     toolButtonSerwer->setFocusPolicy(Qt::StrongFocus);  //tutaj
-    toolButtonSerwer->setFixedWidth(200);
+    //toolButtonSerwer->setFixedWidth(200);
     toolButtonSerwer->setStyleSheet(
         "QToolButton {"
         "    border: 1px solid black;"
@@ -322,6 +352,9 @@ void MainWindow::setupUi()
         // QPalette pal = toolButtonSerwer->palette();
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonSerwer->setPalette(pal);
+        toolButtonSerwer->setSizePolicy(QSizePolicy::Preferred,
+                                        QSizePolicy::Preferred);
+        toolButtonSerwer->adjustSize();
     }
     connect(toggleActionSerwer, &QAction::triggered, this,[this,toolButtonSerwer](){
         ukryjPokazPanelSerwer();
@@ -400,7 +433,7 @@ void MainWindow::setupUi()
     toolbar->addWidget(przerwa2);
     QToolButton *toolButtonPodglad = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionPodglad));
     toolButtonPodglad->setFocusPolicy(Qt::StrongFocus);  //tutaj
-    toolButtonPodglad->setFixedWidth(200);
+//    toolButtonPodglad->setFixedWidth(200);
     toolButtonPodglad->setStyleSheet(
         "QToolButton {"
         "    border: 1px solid black;"
@@ -428,6 +461,9 @@ void MainWindow::setupUi()
         // QPalette pal = toolButtonPodglad->palette();
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonPodglad->setPalette(pal);
+        toolButtonPodglad->setSizePolicy(QSizePolicy::Preferred,
+                                        QSizePolicy::Preferred);
+        toolButtonPodglad->adjustSize();
     }
     connect(toggleActionPodglad, &QAction::triggered, this,[this,toolButtonPodglad](){
         ukryjPokazPanelPodglad();
@@ -1044,7 +1080,7 @@ void MainWindow::setupUi()
     toggleActionNagrania->setCheckable(true);
     QToolButton *toolButtonNagrania = qobject_cast<QToolButton*>(toolbar->widgetForAction(toggleActionNagrania));
     toolButtonNagrania->setFocusPolicy(Qt::StrongFocus);  //tutaj
-    toolButtonNagrania->setFixedWidth(200);
+//    toolButtonNagrania->setFixedWidth(200);
     toolButtonNagrania->setStyleSheet(
         "QToolButton {"
         "    border: 1px solid black;"
@@ -1072,6 +1108,9 @@ void MainWindow::setupUi()
         // QPalette pal = toolButtonNagrania->palette();
         // pal.setColor(QPalette::ButtonText, Qt::blue);
         toolButtonNagrania->setPalette(pal);
+        toolButtonNagrania->setSizePolicy(QSizePolicy::Preferred,
+                                        QSizePolicy::Preferred);
+        toolButtonNagrania->adjustSize();
     }
     connect(toggleActionNagrania, &QAction::triggered, this,[this,toolButtonNagrania](){
         ukryjPokazPanelNagrania();
@@ -1105,10 +1144,14 @@ void MainWindow::setupUi()
     group->addAction(toggleActionNagrania);
 
 // MENU LANGUAGE
+
     QLabel *labelLanguage = new QLabel(tr("☰ JĘZYK: "), this);
     if(labelLanguage){
         labelLanguage->setFont(font);
         labelLanguage->setPalette(pal);
+        labelLanguage->setSizePolicy(QSizePolicy::Preferred,
+                                        QSizePolicy::Preferred);
+        labelLanguage->adjustSize();
     }
     QComboBox *comboBoxLanguage = new QComboBox(this);
     comboBoxLanguage->setStyleSheet(stylesheetComboBox);
@@ -1131,33 +1174,84 @@ void MainWindow::setupUi()
     toolbar->addWidget(labelLanguage);
     toolbar->addWidget(comboBoxLanguage);
 
-    connect(comboBoxLanguage, &QComboBox::currentIndexChanged, this, [comboBoxLanguage](int index){
-        if(comboBoxLanguage->currentData() == "pl"){
-            qDebug() << comboBoxLanguage->currentIndex() << index
-                     <<"język polski" << comboBoxLanguage->currentData().toString()
-                     << comboBoxLanguage->currentText()
-                     << comboBoxLanguage->itemData(index).toString();
-        }else if(comboBoxLanguage->currentData() == "en"){
-            qDebug() << comboBoxLanguage->currentIndex() << index
-            <<"język angielski" << comboBoxLanguage->currentData().toString()
-                     << comboBoxLanguage->currentText()
-                     << comboBoxLanguage->itemData(index).toString();
-        }
-        else if(comboBoxLanguage->currentData() == "de"){
-            qDebug() << comboBoxLanguage->currentIndex() << index
-                     <<"język niemiecki" << comboBoxLanguage->currentData().toString()
-                     << comboBoxLanguage->currentText()
-                     << comboBoxLanguage->itemData(index).toString();
-        }
-        else if(comboBoxLanguage->currentData() == "es"){
-            qDebug() << comboBoxLanguage->currentIndex() << index
-                     <<"język hiszpański" << comboBoxLanguage->currentData().toString()
-                     << comboBoxLanguage->currentText()
-                     << comboBoxLanguage->itemData(index).toString();
-        }
+    connect(comboBoxLanguage, &QComboBox::currentIndexChanged, this,
+        [this,titleSerwer,toggleActionSerwer,item1,item2,item3,item4,item5,
+            comboBoxLanguage,closeBtnSerwer,toggleActionPodglad,
+            titlePodglad,btnSerweryLiveStream,groupBox,closeBtnPodglad,
+            toggleActionNagrania,titleNagrania,closeBtnNagrania,
+            labelLanguage](int index){
+
         QSettings settings("MojaFirma", "MultiCamIp");
         settings.setValue("jezyk/kod", comboBoxLanguage->itemData(index).toString());
         settings.sync();
+
+        QString jezyk = settings.value("jezyk/kod", "pl").toString();
+        qDebug() << "język = " << jezyk;
+
+        if (apptranslator) {
+            qApp->removeTranslator(apptranslator);
+            delete apptranslator;
+            apptranslator = nullptr;
+            apptranslator = new QTranslator(this);
+        }else{
+            apptranslator = new QTranslator(this);
+        }
+        QString plik = QString(":/translations/multicamip_%1").arg(jezyk);
+        if (apptranslator->load(plik)) {
+            qApp->installTranslator(apptranslator);
+            qDebug() << "Załadowano tłumaczenie:"
+                         << plik;
+        }else {
+            qDebug() << "NIE MOŻNA ZAŁADOWAĆ TŁUMACZENIA, WYBIERAM JĘZYK POLSKI"
+                     << plik;
+            delete apptranslator;
+            apptranslator = nullptr;
+        }
+
+        titleSerwer->setText(tr("SERWER"));
+        QString menuHtml = "<span style=\"font-size:16pt; color:blue; font-weight:bold;\">☰ Menu</span>";
+        centralLabel->setText(tr("Kliknij %1 w pasku narzędzi, aby otworzyć wysuwany panel.").arg(menuHtml));
+        toggleActionSerwer->setText(tr("SERWER"));
+        if (!httpSerwer){
+            item1->setText(tr("START SERWER RTSP I HTTP"));
+        }else{
+            if(httpSerwer->isRunning()){
+                item1->setText(tr("ZATRZYMAJ SERWER RTSP i HTTP"));
+            }else{
+                item1->setText(tr("START SERWER RTSP I HTTP"));
+            }
+        }
+        item2->setText(tr("SZUKAJ KAMER PO ADRESIE IP"));
+        item3->setText(tr("USTAWIENIA KAMER"));
+        item4->setText(tr("TOKEN HTTP"));
+        item5->setText(tr("DODAJ IKONĘ DO PULPITU"));
+        closeBtnSerwer->setText(tr("Ukryj"));
+        toggleActionPodglad->setText(tr("☰ PODGLĄD"));
+        titlePodglad->setText(tr("PODGLĄD"));
+        btnSerweryLiveStream->setText(tr("LIVE SERWERY"));
+        groupBox->setTitle(tr("WYBIERZ"));
+        closeBtnPodglad->setText(tr("Ukryj"));
+        toggleActionNagrania->setText(tr("☰ NAGRANIA"));
+        titleNagrania->setText(tr("NAGRANIA"));
+        closeBtnNagrania->setText(tr("Ukryj"));
+        labelLanguage->setText(tr("☰ JĘZYK: "));
+
+        if(translator){
+            qApp->removeTranslator(translator);
+            delete translator;
+            translator = nullptr;
+            translator = new QTranslator(this);
+            QString jezyk_jezyk = jezyk;
+            jezyk_jezyk.append(QString("_%1").arg(jezyk.toUpper()));
+            if (translator->load(
+                    QLocale(jezyk_jezyk),
+                    "qtbase",
+                    "_",
+                    QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+            {
+                qApp->installTranslator(translator);
+            }
+        }
     });
 }
 
